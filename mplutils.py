@@ -6,12 +6,11 @@ Author:
     Kian Ho <hui.kian.ho@gmail.com>
 
 Description:
-    ...
+    This module configures the look and feel of pconpy via matplotlib
+    configurations.
 
 Usage:
     mplutils.py
-
-Options:
 
 """
 
@@ -31,11 +30,14 @@ def px2pt(p):
     """
     return p * 72. / 96.
 
+
 def init_spines(hidden=[]):
     """Initialise the plot frame, hiding the selected spines.
 
     Arguments:
-        hidden -- list of spines to hide (default=[]).
+        hidden -- list of spines to hide (default=[]). For example, set hidden
+        to ["top", "right"] to hide both the top and right axes borders from
+        the plot.
 
     Returns:
         None
@@ -80,14 +82,4 @@ def init_pylab(family=None):
 
 
 if __name__ == '__main__':
-
-    for i in xrange(3):
-        x = np.arange(1000)
-        y = np.random.normal(size=1000).cumsum()
-        pylab.plot(x, y)
-
-    pylab.title("This is a title")
-    pylab.xlabel("This is the x-title")
-    pylab.ylabel("This is the y-title")
-    pylab.semilogy()
-    pylab.savefig("./test.pdf")
+    pass
