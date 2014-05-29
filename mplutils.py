@@ -6,10 +6,10 @@ Author:
     Kian Ho <hui.kian.ho@gmail.com>
 
 Description:
-    TODO
+    ...
 
 Usage:
-    pplutils.py
+    mplutils.py
 
 Options:
 
@@ -25,14 +25,21 @@ import numpy as np
 
 PWD = os.path.abspath(os.path.dirname(__file__))
 
-def pt2px(p):
-    return p * 96. / 72.
-
 def px2pt(p):
+    """Convert pixels to points.
+
+    """
     return p * 72. / 96.
 
 def init_spines(hidden=[]):
-    """
+    """Initialise the plot frame, hiding the selected spines.
+
+    Arguments:
+        hidden -- list of spines to hide (default=[]).
+
+    Returns:
+        None
+
     """
 
     ax = pylab.gca()
@@ -51,16 +58,18 @@ def init_spines(hidden=[]):
 
     return
 
-def init_pylab():
-    """Initialise the pylab look and feel like prettyplotlib
+def init_pylab(family=None):
+    """Initialise and clean up the look and feel of the plotting area.
 
     """
 
     mpl.rc("lines", linewidth=px2pt(1))
     mpl.rc("xtick", **{"direction" : "out" })
     mpl.rc("ytick", **{"direction" : "out" })
-    mpl.rc("font", **{"family" : "FreeSans", "size" : 10.})
     mpl.rc("legend", frameon=False, fontsize=10., numpoints=1)
+
+    if family is not None:
+        mpl.rc("font", **{ "family" : family })
 
     pylab.tick_params(axis="x", which="both", top="off")
     pylab.tick_params(axis="y", which="both", right="off")
@@ -70,11 +79,7 @@ def init_pylab():
     return
 
 
-init_pylab()
-
-
 if __name__ == '__main__':
-
 
     for i in xrange(3):
         x = np.arange(1000)

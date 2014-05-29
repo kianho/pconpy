@@ -9,15 +9,28 @@ Description:
     ...
 
 Usage:
-    pcon.py -p PDB [-c CHAINID] [-o OUTPUT] [-d DIST] [-t THRESH]
+    pcon.py -p PDB [-c CHAINID] -o OUTPUT [options]
 
 Options:
     -p PDB, --pdb PDB
-    -c CHAINID, --chid CHAINID
+    -c CHAINID, --chid CHAINID  Chain identifier (defaults to the first chain if left empty).
     -o OUTPUT, --output OUTPUT
-    -d DIST                         [default: CA]
-    -t THRESH
+    -d DIST                     The inter-residue distance measure (see below) [default: ca].
+    -t THRESH                   The contact distance threshold [default: 8.0].
+    --plaintext                 Generate a plaintext distance/contact matrix
+                                and write to stdout (recommended for
+                                piping into other CLI programs).
+    --title TITLE               The title of the plot (optional).
+    --font FONT                 Set the font family (via matplotlib).
+    --noframe
     -v, --verbose
+
+Distance measures (-d DIST):
+    "ca" -- Conventional CA-CA distance, this is the default distance measure.
+    "cb" -- The CB-CB distance.
+    "cmass" -- The distance between the residue centers of mass.
+    "sccmass" -- The distance between the sidechain centers of mass
+    "minvdw" -- The minimum distance between the VDW radii of each residue.
 
 Dependencies:
     docopt
@@ -27,13 +40,13 @@ Dependencies:
 
 To do:
     - centres-of-mass distance
-    - min. VDW distance
     - optional colour bar for distance map
     - greyscale distance map
 
 """
 
 import mplutils
+import matplotlib
 import matplotlib as mpl
 import os
 import sys
@@ -48,6 +61,7 @@ from collections import defaultdict
 VDW_RADII = \
     defaultdict(float,
         { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 })
+
 
 
 def pdb_to_ag(pdb_file, chain_id=None):
@@ -142,17 +156,21 @@ def mat_to_ascii(mat):
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
-    # hide all the spines i.e. no axes are drawn
-    mplutils.init_spines(hidden=["top", "bottom", "left", "right"])
-
-    # make figure square-shaped
-    pylab.gcf().set_figwidth(6.0)
-    pylab.gcf().set_figheight(6.0)
-
     residues = list(get_residues(opts["--pdb"]))
 
-    if opts["-d"] in [ "CA" ]:
-        res_coords = np.array([ r[opts["-d"]].getCoords() for r in residues ])
+    if opts["-d"] in [ "ca", "cb" ]:
+        # distance between specific atoms.
+        atom_name = opts["-d"].upper()
+        res_coords = []
+
+        for res in residues:
+            try:
+                coord = res[atom_name].getCoords()
+            except:
+                coord = res["CA"].getCoords()
+            res_coords.append(coord)
+
+        res_coords = np.array(res_coords)
         mat = pd.measure.buildDistMatrix(res_coords, res_coords)
     else:
         mat = np.zeros((len(residues), len(residues)), dtype="float64")
@@ -165,7 +183,7 @@ if __name__ == '__main__':
             for i, res_a in enumerate(residues):
                 for j, res_b in enumerate(residues):
                     mat[i,j] = calc_cmass_distance(res_a, res_b)
-        elif opts["-d"] == "scmass":
+        elif opts["-d"] == "sccmass":
             empty_indices = []
             for i, res_a in enumerate(residues):
                 for j, res_b in enumerate(residues):
@@ -178,23 +196,51 @@ if __name__ == '__main__':
             for i, j in empty_indices:
                 mat[i,j] = mat.max()
 
-    pylab.xlim(0, len(residues))
-    pylab.ylim(0, len(residues))
 
-    if opts["-t"] is None:
-        map_obj = pylab.pcolormesh(mat, shading="flat", edgecolors="None", cmap=mpl.cm.jet_r)
+    if opts["--plaintext"]:
+        if opts["-t"] is not None:
+            mat = mat < float(opts["-t"])
+            fmt = "%d"
+        else:
+            fmt = "%.3f"
 
-        # draw the colour bar
-        ax, fig = pylab.gca(), pylab.gcf()
-        box = ax.get_position()
-        pad, width = 0.02, 0.02
-        cax = fig.add_axes([box.xmax + pad, box.ymin, width, box.height])
-        cbar = pylab.colorbar(map_obj, drawedges=False, cax=cax)
-        cbar.outline.set_visible(False)
+        np.savetxt(sys.stdout, mat, fmt=fmt)
     else:
-        thresh = float(opts["-t"])
-        mplutils.init_spines(hidden=[])
-        map_obj = pylab.pcolormesh((mat < thresh).astype("int"),
-            shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
+        mplutils.init_pylab(family=opts["--font"])
 
-    pylab.savefig(opts["--output"], bbox_inches="tight")
+        # hide all the spines i.e. no axes are drawn
+        mplutils.init_spines(hidden=["top", "bottom", "left", "right"])
+
+        # make figure square-shaped
+        pylab.gcf().set_figwidth(6.0)
+        pylab.gcf().set_figheight(6.0)
+
+        pylab.xlim(0, len(residues))
+        pylab.ylim(0, len(residues))
+
+        pylab.xlabel("Residue index")
+        pylab.ylabel("Residue index")
+
+        ax, fig = pylab.gca(), pylab.gcf()
+
+        if opts["-t"] is None:
+            map_obj = pylab.pcolormesh(mat, shading="flat", edgecolors="None", cmap=mpl.cm.jet_r)
+
+            # draw the colour bar
+            box = ax.get_position()
+            pad, width = 0.02, 0.02
+            cax = fig.add_axes([box.xmax + pad, box.ymin, width, box.height])
+            cbar = pylab.colorbar(map_obj, drawedges=False, cax=cax)
+            cbar.outline.set_visible(False)
+            pylab.ylabel("Distance (Angstroms)")
+        else:
+            thresh = float(opts["-t"])
+            if not opts["--noframe"]:
+                mplutils.init_spines(hidden=[])
+            map_obj = pylab.pcolormesh((mat < thresh).astype("int"),
+                shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
+
+        if opts["--title"] is not None:
+            ax.set_title(opts["--title"], fontweight="bold")
+
+        pylab.savefig(opts["--output"], bbox_inches="tight")
