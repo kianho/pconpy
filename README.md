@@ -8,4 +8,5 @@ This is the official repository for the redevelopment of PConPy, previously publ
     pp. 2934-2935.
 
 The full article is accessible [here](http://bioinformatics.oxfordjournals.org/content/24/24/2934.full).
-The original source code associated with the article can be accessed [here](http://pconpy.kianho.net).
+
+The original source code associated with the article can be accessed from the `legacy` branch of this repository.
