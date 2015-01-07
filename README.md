@@ -17,15 +17,13 @@ The original source code associated with the article can be accessed from the
 
 ## Motivation
 
-Protein structures are typically inspected using tools such as PyMol or VMD,
-which generate 3D renderings of proteins, allowing the researcher to inspect
-structural features using conventional zoom, pan, and rotate controls. Contact
-maps are a reduced representation of 3D structure that are invariant to affine
-transformations. This enables the researcher to perform a rapid visual
-exploratory data analysis of a protein structure without the need for rendering
-or geometric operations in 3D. Additionally, the 2D matrix representation of a
-contact map (known as a _contact matrix_) can be easily manipulated for use by
-conventional machine learning algorithms for protein structure prediction tasks.
+_Contact maps_ are a reduced representation of 3D structure that are invariant
+to affine transformations. This enables the researcher to perform a rapid
+visual exploratory data analysis of a protein structure without the need for
+rendering or geometric operations in 3D. Additionally, the 2D matrix
+representation of a contact map (known as a _contact matrix_) can be easily
+manipulated for use by conventional machine learning algorithms for protein
+structure prediction tasks.
 
 ## History
 
