@@ -84,7 +84,15 @@ def pdb_to_ag(pdb_file, chain_id=None):
 
 
 def get_residues(pdb_file, chain_id=None):
-    """
+    """Get an iterator over the residues from a single chain in a pdb file.
+
+    Arguments:
+        pdb_file --
+        chain_id --
+
+    Returns:
+        an iterator over prody.Residue objects.
+
     """
 
     ag = pdb_to_ag(pdb_file)
@@ -96,6 +104,24 @@ def get_residues(pdb_file, chain_id=None):
     chain = ag.getHierView()[chain_id]
 
     return chain.iterResidues()
+
+
+def calc_eucl_distance(res_a, res_b, atom_a="CA", atom_b="CA"):
+    """Compute the Euclidean distance between specific atoms of a pair of
+    residues.
+
+    Arguments:
+        res_a --
+        res_b --
+        atom_a --
+        atom_b --
+
+    Returns:
+        ...
+
+    """
+
+    return pd.measure.calcDistance(atom_a, atom_b)
 
 
 def calc_minvdw_distance(res_a, res_b):
@@ -195,7 +221,6 @@ if __name__ == '__main__':
 
             for i, j in empty_indices:
                 mat[i,j] = mat.max()
-
 
     if opts["--plaintext"]:
         if opts["-t"] is not None:
