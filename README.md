@@ -27,11 +27,10 @@ structure prediction tasks.
 
 ## History
 
-This project was conceived at the beginning of my PhD when I first became interested in
-analysing [known 3D protein structures](http://www.pdb.org) for interesting
-patterns to be (potentially) used for protein structure prediction tasks.
-This project provided me with one of my first opportunities to experiment
-with the [matplotlib]() library.
+This project was conceived at the beginning of my PhD when I first became
+interested in analysing [known 3D protein structures](http://www.pdb.org) for
+interesting patterns. The project also provided me with one of my first
+opportunities to experiment with the [matplotlib]() library.
 
 
 ## Acknowledgements
