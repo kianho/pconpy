@@ -15,14 +15,28 @@ The original source code associated with the article can be accessed from the
 `legacy` branch of this repository.
 
 
-# History
+## Motivation
 
-I began developing PConPy at the beginning of my PhD when I became interested
-in 2D visualisations of [known 3D protein structures](http://www.pdb.org).
-This project provided me with one of my first opportunities to perform
-exploratory data analyses using the [matplotlib]() library.
+Protein structures are typically inspected using tools such as PyMol or VMD,
+which generate 3D renderings of proteins, allowing the researcher to inspect
+structural features using conventional zoom, pan, and rotate controls. Contact
+maps are a reduced representation of 3D structure that are invariant to affine
+transformations. This enables the researcher to perform a rapid visual
+exploratory data analysis of a protein structure without the need for rendering
+or geometric operations in 3D. Additionally, the 2D matrix representation of a
+contact map (known as a _contact matrix_) can be easily manipulated for use by
+conventional machine learning algorithms for protein structure prediction tasks.
 
-# Acknowledgements
+## History
+
+This project began at the beginning of my PhD when I first became interested in
+analysing [known 3D protein structures](http://www.pdb.org) for interesting
+patterns to be (potentially) used for protein structure prediction tasks.
+This project provided me with one of my first opportunities to experiment
+with the [matplotlib]() library.
+
+
+## Acknowledgements
 
 Peter Cock's (@peterjc) [tutorial](http://goo.gl/q7DNt7) was especially helpful
 in getting me started with the mechanics of PDB file parsing and visualisation.
