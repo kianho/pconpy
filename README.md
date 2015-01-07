@@ -19,11 +19,10 @@ The original source code associated with the article can be accessed from the
 
 _Contact maps_ are a reduced representation of 3D structure that are invariant
 to affine transformations. This enables the researcher to perform a rapid
-visual exploratory data analysis of a protein structure without the need for
-rendering or geometric operations in 3D. Additionally, the 2D matrix
-representation of a contact map (known as a _contact matrix_) can be easily
-manipulated for use by conventional machine learning algorithms for protein
-structure prediction tasks.
+visual exploratory data analysis of a protein structure without the need for 3D
+rendering. Additionally, the 2D matrix representation of a contact map (known
+as a _contact matrix_) can naturally be used as numeric input in subsequent
+automated knowledge discovery or machine learning tasks.
 
 ## History
 
