@@ -29,7 +29,7 @@ automated knowledge discovery or machine learning tasks.
 This project was conceived at the beginning of my PhD when I first became
 interested in analysing [known 3D protein structures](http://www.pdb.org) for
 interesting patterns. The project also provided me with one of my first
-opportunities to experiment with the [matplotlib]() library.
+opportunities to experiment with the [matplotlib](http://matplotlib.org/) library.
 
 
 ## Acknowledgements
