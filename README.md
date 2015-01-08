@@ -17,9 +17,10 @@ The original source code associated with the article can be accessed from the
 
 ## About
 
-A _contact map_ is a 2D representation of protein structure that is invariant
-to affine transformations. It enables the rapid visual exploratory data
-analysis of protein structural features without 3D rendering software.
+A [_contact map_](http://en.wikipedia.org/wiki/Protein_contact_map) is a 2D
+representation of protein structure that illustrates the presence or absence of
+contacts between individual amino acids. This enables the rapid visual
+exploratory data analysis of structural features without 3D rendering software.
 Additionally, the underlying 2D matrix of a contact map, known as a _contact
 matrix_, can naturally be used as numeric input in subsequent automated
 knowledge discovery or machine learning tasks. PConPy generates
