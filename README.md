@@ -15,14 +15,16 @@ The original source code associated with the article can be accessed from the
 `legacy` branch of this repository.
 
 
-## Motivation
+## About
 
-_Contact maps_ are a reduced representation of 3D structure that are invariant
-to affine transformations. This enables the researcher to perform a rapid
-visual exploratory data analysis of a protein structure without the need for 3D
-rendering. Additionally, the 2D matrix representation of a contact map (known
-as a _contact matrix_) can naturally be used as numeric input in subsequent
-automated knowledge discovery or machine learning tasks.
+A _contact map_ is a 2D representation of protein structure that is invariant
+to affine transformations. It enables the rapid visual exploratory data
+analysis of protein structural features without 3D rendering software.
+Additionally, the underlying 2D matrix of a contact map, known as a _contact
+matrix_, can naturally be used as numeric input in subsequent automated
+knowledge discovery or machine learning tasks. PConPy generates
+publication-quality renderings of contact maps, and the related distance- and
+hydrogen bond maps.
 
 ## History
 
