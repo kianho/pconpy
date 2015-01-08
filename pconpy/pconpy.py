@@ -50,6 +50,7 @@ import matplotlib
 import matplotlib as mpl
 import os
 import sys
+import numpy
 import numpy as np
 import prody as pd
 import pylab
@@ -62,6 +63,8 @@ VDW_RADII = \
     defaultdict(float,
         { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 })
 
+
+import Bio.PDB
 
 
 def pdb_to_ag(pdb_file, chain_id=None):
@@ -121,7 +124,10 @@ def calc_eucl_distance(res_a, res_b, atom_a="CA", atom_b="CA"):
 
     """
 
-    return pd.measure.calcDistance(atom_a, atom_b)
+    A = res_a[atom_a].get_coord()
+    B = res_b[atom_b].get_coord()
+
+    return numpy.linalg.norm(A, B)
 
 
 def calc_minvdw_distance(res_a, res_b):
