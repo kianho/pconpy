@@ -13,7 +13,7 @@ Usage:
 
 Options:
     -p PDB, --pdb PDB
-    -c CHAINID, --chid CHAINID  Chain identifier (defaults to the first chain if left empty).
+    -c CHAINIDS, --chid CHAINIDS    Space-separated list of chain identifiers (defaults to the first chain if left empty).
     -o OUTPUT, --output OUTPUT
     -d DIST                     The inter-residue distance measure (see below) [default: ca].
     -t THRESH                   The contact distance threshold [default: 8.0].
@@ -52,12 +52,13 @@ import os
 import sys
 import numpy
 import numpy as np
-import prody as pd
 import pylab
 import tempfile
+import Bio.PDB
 
 from docopt import docopt
 from collections import defaultdict
+from itertools import ifilter, combinations
 
 VDW_RADII = \
     defaultdict(float,
@@ -86,27 +87,45 @@ def pdb_to_ag(pdb_file, chain_id=None):
     return ag.select("protein")
 
 
-def get_residues(pdb_file, chain_id=None):
-    """Get an iterator over the residues from a single chain in a pdb file.
+def get_residues(pdb_fn, chain_id=None, model_num=0):
+    """Build a simple list of residues from a single chain.
 
     Arguments:
-        pdb_file --
+        pdb_fn --
         chain_id --
+        model_num --
 
     Returns:
-        an iterator over prody.Residue objects.
+        ...
 
     """
 
-    ag = pdb_to_ag(pdb_file)
+    pdb_id = os.path.splitext(os.path.basename(pdb_fn))[0]
 
-    # Default to the first/only chain ID if none were specified.
+    parser = Bio.PDB.PDBParser(pdb_id, pdb_fn)
+    struct = parser.get_structure(pdb_id, pdb_fn)
+    model = struct[model_num]
+
     if chain_id is None:
-        chain_id = ag.getChids()[0]
+        # get residues from every chain.
+        chains = model.get_list()
+    else:
+        chains = [model[chain_id]]
 
-    chain = ag.getHierView()[chain_id]
+    residues = []
 
-    return chain.iterResidues()
+    # To do, handle:
+    # - disordered residues/atoms (todo)
+    # - non-amino acids
+    # - non-standard amino acids
+    for ch in chains:
+        for res in ifilter(lambda r : Bio.PDB.is_aa(r), ch.get_residues()):
+            if not Bio.PDB.is_aa(res, standard=True):
+                sys.stderr.write("WARNING: non-standard AA at %r%s"
+                        % (res.get_id(), os.linesep))
+            residues.append(res)
+
+    return residues
 
 
 def calc_eucl_distance(res_a, res_b, atom_a="CA", atom_b="CA"):
@@ -130,6 +149,60 @@ def calc_eucl_distance(res_a, res_b, atom_a="CA", atom_b="CA"):
     return numpy.linalg.norm(A, B)
 
 
+def calc_distance(res_a, res_b, metric="ca"):
+    """Calculate the Euclidean distance between a pair of residues according to
+    a given distance metric.
+
+    """
+
+    if metric in ("ca", "cb"):
+        # Conventional CA-CA or CB-CB distance.
+        atom_name = metric.upper()
+
+        assert(atom_name in res_a)
+        assert(atom_name in res_b)
+
+        atom_a = res_a[atom_name] 
+        atom_b = res_b[atom_name]
+
+        A = atom_a.get_coord()
+        B = atom_b.get_coord()
+
+        dist = numpy.linalg.norm(A-B)
+    else:
+        raise NotImplementedError
+
+    return dist
+
+
+def make_dist_matrix(residues, metric="ca"):
+    """Calculate the distance matrix for a list of residues.
+
+    Arguments:
+        residues --
+        metric --
+
+    Returns
+        ...
+
+    """
+
+    mat = numpy.zeros((len(residues), len(residues)), dtype="float64")
+
+    # Compute the upper-triangle of the underlying distance matrix.
+    #
+    # TODO:
+    # - parallelise this over multiple processes + show benchmark results.
+    for i, j in combinations(xrange(len(residues)), 2):
+        res_a = residues[i]
+        res_b = residues[j]
+
+        mat[i,j] = calc_distance(res_a, res_b, metric)
+
+    return mat
+
+
+
 def calc_minvdw_distance(res_a, res_b):
     """
     """
@@ -142,7 +215,7 @@ def calc_minvdw_distance(res_a, res_b):
         for b in atoms_b:
             dist = pd.measure.calcDistance(a, b)
 
-            if ( min_dist is None ) or dist < min_dist:
+            if (min_dist is None) or dist < min_dist:
                 min_dist = dist
 
     return min_dist
@@ -188,9 +261,13 @@ def mat_to_ascii(mat):
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
-    residues = list(get_residues(opts["--pdb"]))
+    residues = get_residues(opts["--pdb"])
 
-    if opts["-d"] in [ "ca", "cb" ]:
+    #
+    # Generate the underlying 2D matrix for the selected plot.
+    #
+
+    if opts["-d"] in ("ca", "cb"):
         # distance between specific atoms.
         atom_name = opts["-d"].upper()
         res_coords = []
@@ -198,7 +275,7 @@ if __name__ == '__main__':
         for res in residues:
             try:
                 coord = res[atom_name].getCoords()
-            except:
+            except KeyError:
                 coord = res["CA"].getCoords()
             res_coords.append(coord)
 
