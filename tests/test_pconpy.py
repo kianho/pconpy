@@ -56,18 +56,27 @@ class TestGeometry:
 
         """
 
-        # Ideal case should result in a square non-zero distance matrix.
-        pdb_fn = self.pdb_id_to_fn("1ubq")
-        residues = pconpy.get_residues(pdb_fn)
-        mat = pconpy.make_dist_matrix(residues)
+        def run_test(metric):
+            """
+            """
 
-        assert( mat is not None )
-        assert( numpy.any(mat > 0) )
-        assert( mat.shape == (len(residues), len(residues)) )
+            # Ideal case should result in a square non-zero distance matrix.
+            pdb_fn = self.pdb_id_to_fn("1ubq")
+            residues = pconpy.get_residues(pdb_fn)
+            mat = pconpy.make_dist_matrix(residues, metric)
 
-        # Empty residues list should result in an empty distance matrix.
-        residues = []
-        mat = pconpy.make_dist_matrix(residues)
+            assert( mat is not None )
+            assert( numpy.any(mat > 0) )
+            assert( mat.shape == (len(residues), len(residues)) )
 
-        assert( mat is not None )
-        assert( mat.shape == (0,0) )
+            # Empty residues list should result in an empty distance matrix.
+            residues = []
+            mat = pconpy.make_dist_matrix(residues, metric=metric)
+
+            assert( mat is not None )
+            assert( mat.shape == (0,0) )
+
+            return
+
+        for metric in ("CA", "CB"):
+            yield run_test, metric

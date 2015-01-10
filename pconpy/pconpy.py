@@ -15,7 +15,7 @@ Options:
     -p PDB, --pdb PDB
     -c CHAINIDS, --chid CHAINIDS    Space-separated list of chain identifiers (defaults to the first chain if left empty).
     -o OUTPUT, --output OUTPUT
-    -d DIST                     The inter-residue distance measure (see below) [default: ca].
+    -d DIST                     The inter-residue distance measure (see below) [default: CA].
     -t THRESH                   The contact distance threshold [default: 8.0].
     --plaintext                 Generate a plaintext distance/contact matrix
                                 and write to stdout (recommended for
@@ -26,8 +26,8 @@ Options:
     -v, --verbose
 
 Distance measures (-d DIST):
-    "ca" -- Conventional CA-CA distance, this is the default distance measure.
-    "cb" -- The CB-CB distance.
+    "CA" -- Conventional CA-CA distance, this is the default distance measure.
+    "CB" -- The CB-CB distance.
     "cmass" -- The distance between the residue centers of mass.
     "sccmass" -- The distance between the sidechain centers of mass
     "minvdw" -- The minimum distance between the VDW radii of each residue.
@@ -149,57 +149,69 @@ def calc_eucl_distance(res_a, res_b, atom_a="CA", atom_b="CA"):
     return numpy.linalg.norm(A, B)
 
 
+def get_atom_coord(res, atom_name, verbose=False):
+    """
+    If the CB coordinate exists, return it, otherwise compute a
+    virtual CB coordinate by rotating the N atom -120 degrees around the CA-C
+    vector. This will occur with Glycine residues which don't have sidechain
+    atoms.
+
+    Arguments:
+        res --
+        atom_name --
+        verbose --
+
+    Reference:
+        http://goo.gl/OaNjxe
+
+    """
+
+    try:
+        coord = res[atom_name].get_coord()
+    except KeyError:
+        if atom_name != "CB":
+            raise NotImplementedError
+
+        if verbose:
+            sys.stderr.write(
+                "WARNING: computing virtual {} coordinate.".format(atom_name)
+                    + os.linesep)
+
+        assert("N" in res)
+        assert("CA" in res)
+        assert("C" in res)
+
+        # NOTE:
+        # These are Bio.PDB.Vector objects and _not_ numpy arrays.
+        N = res["N"].get_vector()
+        CA = res["CA"].get_vector()
+        C = res["C"].get_vector()
+
+        CA_N = N - CA
+        CA_C = C - CA
+
+        rot_mat = Bio.PDB.rotaxis(numpy.pi * 120.0 / 180.0, CA_C)
+
+        coord = (CA + N.left_multiply(rot_mat)).get_array()
+
+    return coord
+
+
 def calc_distance(res_a, res_b, metric="ca"):
     """Calculate the Euclidean distance between a pair of residues according to
     a given distance metric.
 
     """
 
-    if metric in ("ca", "cb"):
-        # Conventional CA-CA or CB-CB distance.
-        atom_name = metric.upper()
-
-        assert(atom_name in res_a)
-        assert(atom_name in res_b)
-
-        atom_a = res_a[atom_name] 
-        atom_b = res_b[atom_name]
-
-        A = atom_a.get_coord()
-        B = atom_b.get_coord()
+    if metric in ("CA", "CB"):
+        A = get_atom_coord(res_a, metric)
+        B = get_atom_coord(res_b, metric)
 
         dist = numpy.linalg.norm(A-B)
     else:
         raise NotImplementedError
 
     return dist
-
-
-def make_dist_matrix(residues, metric="ca"):
-    """Calculate the distance matrix for a list of residues.
-
-    Arguments:
-        residues --
-        metric --
-
-    Returns
-        ...
-
-    """
-
-    mat = numpy.zeros((len(residues), len(residues)), dtype="float64")
-
-    # Compute the upper-triangle of the underlying distance matrix.
-    #
-    # TODO:
-    # - parallelise this over multiple processes + show benchmark results.
-    for i, j in combinations(xrange(len(residues)), 2):
-        res_a = residues[i]
-        res_b = residues[j]
-
-        mat[i,j] = calc_distance(res_a, res_b, metric)
-
-    return mat
 
 
 
@@ -258,6 +270,34 @@ def mat_to_ascii(mat):
     return
 
 
+def make_dist_matrix(residues, metric="ca"):
+    """Calculate the distance matrix for a list of residues.
+
+    Arguments:
+        residues --
+        metric --
+
+    Returns
+        ...
+
+    """
+
+    mat = numpy.zeros((len(residues), len(residues)), dtype="float64")
+
+    # Compute the upper-triangle of the underlying distance matrix.
+    #
+    # TODO:
+    # - parallelise this over multiple processes + show benchmark results.
+    for i, j in combinations(xrange(len(residues)), 2):
+        res_a = residues[i]
+        res_b = residues[j]
+
+        mat[i,j] = calc_distance(res_a, res_b, metric)
+
+    return mat
+
+
+
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
@@ -267,7 +307,7 @@ if __name__ == '__main__':
     # Generate the underlying 2D matrix for the selected plot.
     #
 
-    if opts["-d"] in ("ca", "cb"):
+    if opts["-d"] in ("CA", "CB"):
         # distance between specific atoms.
         atom_name = opts["-d"].upper()
         res_coords = []
