@@ -50,6 +50,7 @@ import matplotlib
 import matplotlib as mpl
 import os
 import sys
+import re
 import numpy
 import numpy as np
 import pylab
@@ -58,7 +59,7 @@ import Bio.PDB
 
 from docopt import docopt
 from collections import defaultdict
-from itertools import ifilter, combinations
+from itertools import ifilter, combinations, product
 
 VDW_RADII = \
     defaultdict(float,
@@ -66,6 +67,25 @@ VDW_RADII = \
 
 
 import Bio.PDB
+
+# The atom names of the backbone and sidechain atoms are based on those found in
+# the `ProDy` module.
+BACKBONE_ATOMS = set(["CA", "C", "O", "N"])
+BACKBONE_FULL_ATOMS = set(['CA', 'C', 'O', 'N', 'H', 'H1', 'H2', 'H3', 'OXT'])
+
+
+def is_backbone(atom):
+    return atom.get_id() in BACKBONE_ATOMS
+
+def is_sidechain(atom):
+    return atom.get_id() not in BACKBONE_FULL_ATOMS
+
+def get_backbone_atoms(res):
+    return filter(lambda atom : is_backbone(atom), res.child_list)
+
+def get_sidechain_atoms(res):
+    return filter(lambda atom : is_sidechain(atom), res.child_list)
+
 
 
 def pdb_to_ag(pdb_file, chain_id=None):
@@ -197,26 +217,13 @@ def get_atom_coord(res, atom_name, verbose=False):
     return coord
 
 
-def calc_distance(res_a, res_b, metric="ca"):
-    """Calculate the Euclidean distance between a pair of residues according to
-    a given distance metric.
-
-    """
-
-    if metric in ("CA", "CB"):
-        A = get_atom_coord(res_a, metric)
-        B = get_atom_coord(res_b, metric)
-
-        dist = numpy.linalg.norm(A-B)
-    else:
-        raise NotImplementedError
-
-    return dist
-
-
-
 def calc_minvdw_distance(res_a, res_b):
     """
+
+    Notes:
+        This needs to account for the radius of each atom since the coordinates
+        for each atom represent their atomic centers.
+
     """
 
     atoms_a = list(res_a.iterAtoms())
@@ -253,6 +260,56 @@ def calc_cmass_distance(res_a, res_b, sidechain_only=False):
     coord_b = pd.measure.calcCenter(res_b, weights=res_b.getMasses())
 
     return pd.measure.calcDistance(coord_a, coord_b)
+
+
+def calc_distance(res_a, res_b, metric="CA"):
+    """Calculate the Euclidean distance between a pair of residues according to
+    a given distance metric.
+
+    Arguments:
+        res_a --
+        res_b --
+        metric --
+
+    Returns:
+        ...
+
+    """
+
+    if metric in ("CA", "CB"):
+        A = get_atom_coord(res_a, metric)
+        B = get_atom_coord(res_b, metric)
+
+        dist = numpy.linalg.norm(A-B)
+
+    elif metric == "minvdw":
+        # keep backbone + sidechain atoms from both residues.
+        atoms_a = get_backbone_atoms(res_a) + get_sidechain_atoms(res_a)
+        atoms_b = get_backbone_atoms(res_b) + get_sidechain_atoms(res_b)
+
+        # find the minimum distance between the vdw radii of each atom pair
+        # between residues (i.e. from the Cartesian product of residue atoms).
+        min_dist = None
+        for atom_a, atom_b in product(res_a.child_list, res_b.child_list):
+            A = atom_a.get_coord()
+            B = atom_b.get_coord()
+            curr_dist = numpy.linalg.norm(A-B)
+
+            # TODO:
+            # - modify curr_dist to account for the VDW radii.
+
+            if (min_dist is None) or (curr_dist < min_dist):
+                min_dist = curr_dist
+
+        assert(min_dist is not None)
+
+        dist = min_dist
+    else:
+        raise NotImplementedError
+
+    return dist
+
+
 
 
 def mat_to_ascii(mat):

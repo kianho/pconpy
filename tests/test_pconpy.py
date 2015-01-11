@@ -52,7 +52,7 @@ class TestGeometry:
 
 
     def test_make_dist_matrix(self):
-        """Test the generation of standard Euclidean distance matrices.
+        """Test the generation of distance matrices.
 
         """
 
@@ -78,5 +78,5 @@ class TestGeometry:
 
             return
 
-        for metric in ("CA", "CB"):
+        for metric in ("CA", "CB", "minvdw"):
             yield run_test, metric
