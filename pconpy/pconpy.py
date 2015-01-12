@@ -73,6 +73,13 @@ import Bio.PDB
 BACKBONE_ATOMS = set(["CA", "C", "O", "N"])
 BACKBONE_FULL_ATOMS = set(['CA', 'C', 'O', 'N', 'H', 'H1', 'H2', 'H3', 'OXT'])
 
+# VDW radii values
+#
+# NOTE: 
+#   - The first character in the PDB atom name is the element of the atom.
+#
+VDW_RADII = { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 }
+
 
 def is_backbone(atom):
     return atom.get_id() in BACKBONE_ATOMS
@@ -81,10 +88,10 @@ def is_sidechain(atom):
     return atom.get_id() not in BACKBONE_FULL_ATOMS
 
 def get_backbone_atoms(res):
-    return filter(lambda atom : is_backbone(atom), res.child_list)
+    return filter(lambda atom : is_backbone(atom), res.get_iterator())
 
 def get_sidechain_atoms(res):
-    return filter(lambda atom : is_sidechain(atom), res.child_list)
+    return filter(lambda atom : is_sidechain(atom), res.get_iterator())
 
 
 
@@ -217,22 +224,29 @@ def get_atom_coord(res, atom_name, verbose=False):
     return coord
 
 
+def calc_center_of_mass(atoms):
+    """
+    """
+    return ( numpy.array([(x.mass * x.get_coord()) for x in atoms]).sum()
+                / sum(x.mass for x in atoms) )
+
+
 def calc_minvdw_distance(res_a, res_b):
     """
 
-    Notes:
-        This needs to account for the radius of each atom since the coordinates
-        for each atom represent their atomic centers.
-
     """
 
-    atoms_a = list(res_a.iterAtoms())
-    atoms_b = list(res_b.iterAtoms())
     min_dist = None
 
-    for a in atoms_a:
-        for b in atoms_b:
-            dist = pd.measure.calcDistance(a, b)
+    for a in res_a.get_iterator():
+        for b in res_b.get_iterator():
+            radii_a = VDW_RADII.get(a.get_id()[0], 0.0)
+            radii_b = VDW_RADII.get(b.get_id()[0], 0.0)
+
+            A = a.get_coord()
+            B = b.get_coord()
+
+            dist = numpy.linalg.norm(A - B) - radii_a - radii_b
 
             if (min_dist is None) or dist < min_dist:
                 min_dist = dist
@@ -243,23 +257,18 @@ def calc_minvdw_distance(res_a, res_b):
 def calc_cmass_distance(res_a, res_b, sidechain_only=False):
     """
     """
-    _res_a = res_a
-    _res_b = res_b
 
     if sidechain_only:
-        res_a = res_a.select("sidechain")
-        res_b = res_b.select("sidechain")
+        atoms_a = get_sidechain_atoms(res_a)
+        atoms_b = get_sidechain_atoms(res_b)
+    else:
+        atoms_a = res_a.get_list()
+        atoms_b = res_b.get_list()
 
-    if res_a is None:
-        res_a = _res_a
+    A = calc_center_of_mass(atoms_a)
+    B = calc_center_of_mass(atoms_b)
 
-    if res_b is None:
-        res_b = _res_b
-
-    coord_a = pd.measure.calcCenter(res_a, weights=res_a.getMasses())
-    coord_b = pd.measure.calcCenter(res_b, weights=res_b.getMasses())
-
-    return pd.measure.calcDistance(coord_a, coord_b)
+    return numpy.linalg.norm(A-B)
 
 
 def calc_distance(res_a, res_b, metric="CA"):
@@ -281,29 +290,12 @@ def calc_distance(res_a, res_b, metric="CA"):
         B = get_atom_coord(res_b, metric)
 
         dist = numpy.linalg.norm(A-B)
-
+    elif metric == "cmass":
+        dist = calc_cmass_distance(res_a, res_b)
+#   elif metric == "sccmass":
+#       dist = calc_cmass_distance(res_a, res_b, sidechain_only=True)
     elif metric == "minvdw":
-        # keep backbone + sidechain atoms from both residues.
-        atoms_a = get_backbone_atoms(res_a) + get_sidechain_atoms(res_a)
-        atoms_b = get_backbone_atoms(res_b) + get_sidechain_atoms(res_b)
-
-        # find the minimum distance between the vdw radii of each atom pair
-        # between residues (i.e. from the Cartesian product of residue atoms).
-        min_dist = None
-        for atom_a, atom_b in product(res_a.child_list, res_b.child_list):
-            A = atom_a.get_coord()
-            B = atom_b.get_coord()
-            curr_dist = numpy.linalg.norm(A-B)
-
-            # TODO:
-            # - modify curr_dist to account for the VDW radii.
-
-            if (min_dist is None) or (curr_dist < min_dist):
-                min_dist = curr_dist
-
-        assert(min_dist is not None)
-
-        dist = min_dist
+        dist = calc_minvdw_distance(res_a, res_b)
     else:
         raise NotImplementedError
 

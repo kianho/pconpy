@@ -78,5 +78,5 @@ class TestGeometry:
 
             return
 
-        for metric in ("CA", "CB", "minvdw"):
+        for metric in ("CA", "CB", "cmass", "minvdw"):
             yield run_test, metric
