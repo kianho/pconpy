@@ -45,14 +45,16 @@ To do:
 
 """
 
-import mplutils
 import matplotlib as mpl
+
+mpl.use('Agg')
+
 import os
 import sys
 import re
+import tempfile
 import numpy
 import pylab
-import tempfile
 
 from collections import defaultdict
 from itertools import ifilter, product
@@ -76,14 +78,21 @@ BACKBONE_FULL_ATOMS = set(['CA', 'C', 'O', 'N', 'H', 'H1', 'H2', 'H3', 'OXT'])
 VDW_RADII = { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 }
 
 
+#
+# Utilities
+#
+
 def is_backbone(atom):
     return atom.get_id() in BACKBONE_ATOMS
+
 
 def is_sidechain(atom):
     return atom.get_id() not in BACKBONE_FULL_ATOMS
 
+
 def get_backbone_atoms(res):
     return filter(lambda atom : is_backbone(atom), res.get_iterator())
+
 
 def get_sidechain_atoms(res, infer_CB=True):
     """
@@ -106,25 +115,6 @@ def get_sidechain_atoms(res, infer_CB=True):
         atoms = [CB_atom]
 
     return atoms
-
-
-def pdb_to_ag(pdb_file, chain_id=None):
-    """Generate the AtomGroup object from a single PDB file.
-
-    """
-
-    dssp_fd, dssp_out = tempfile.mkstemp()
-    dssp = pd.proteins.execDSSP(pdb_file, outputname=dssp_out)
-
-    ag = pd.proteins.parsePDB(pdb_file)
-    ag = pd.proteins.parseDSSP(dssp, ag, parseall=True)
-
-    # chain = ag.select("protein").getHierView()[opts["--chid"]]
-
-    os.close(dssp_fd)
-    os.remove(dssp_out)
-
-    return ag.select("protein")
 
 
 def get_residues(pdb_fn, chain_ids=None, model_num=0):
@@ -166,27 +156,6 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
             residues.append(res)
 
     return residues
-
-
-def calc_eucl_distance(res_a, res_b, atom_a="CA", atom_b="CA"):
-    """Compute the Euclidean distance between specific atoms of a pair of
-    residues.
-
-    Arguments:
-        res_a --
-        res_b --
-        atom_a --
-        atom_b --
-
-    Returns:
-        ...
-
-    """
-
-    A = res_a[atom_a].get_coord()
-    B = res_b[atom_b].get_coord()
-
-    return numpy.linalg.norm(A, B)
 
 
 def get_atom_coord(res, atom_name, verbose=False):
@@ -236,6 +205,72 @@ def get_atom_coord(res, atom_name, verbose=False):
 
     return coord
 
+
+#
+# Plotting
+#
+
+def px2pt(p):
+    """Convert pixels to points.
+
+    """
+    return p * 72. / 96.
+
+
+def init_spines(hidden=[]):
+    """Initialise the plot frame, hiding the selected spines.
+
+    Arguments:
+        hidden -- list of spines to hide (default=[]). For example, set hidden
+        to ["top", "right"] to hide both the top and right axes borders from
+        the plot.
+
+    Returns:
+        None
+
+    """
+
+    ax = pylab.gca()
+
+    all_spines = ["top", "bottom", "right", "left", "polar"]
+
+    for spine in all_spines:
+        if spine in hidden:
+            ax.spines[spine].set_visible(False)
+        else:
+            try:
+                ax.spines[spine].set_visible(True)
+                ax.spines[spine].set_linewidth(px2pt(0.75))
+            except KeyError:
+                pass
+
+    return
+
+
+def init_pylab(family=None):
+    """Initialise and clean up the look and feel of the plotting area.
+
+    """
+
+    mpl.rc("lines", linewidth=px2pt(1))
+    mpl.rc("xtick", **{"direction" : "out" })
+    mpl.rc("ytick", **{"direction" : "out" })
+    mpl.rc("legend", frameon=False, fontsize=10., numpoints=1)
+
+    if family is not None:
+        mpl.rc("font", **{ "family" : family })
+
+    pylab.tick_params(axis="x", which="both", top="off")
+    pylab.tick_params(axis="y", which="both", right="off")
+
+    init_spines()
+
+    return
+
+
+#
+# Geometry
+#
 
 def calc_center_of_mass(atoms):
     """Compute the center of mass from a list of atoms.
@@ -366,7 +401,7 @@ def calc_dist_matrix(residues, metric="CA", threshold=None, symmetric=False):
 
         mat[i,j] = dist
 
-        symmetric = True
+        symmetric = False
         if symmetric:
             mat[j,i] = dist
 
@@ -428,10 +463,10 @@ if __name__ == '__main__':
 
         numpy.savetxt(sys.stdout, mat, fmt=fmt)
     else:
-        mplutils.init_pylab(family=opts["--font"])
+        init_pylab(family=opts["--font"])
 
         # hide all the spines i.e. no axes are drawn
-        mplutils.init_spines(hidden=["top", "bottom", "left", "right"])
+        init_spines(hidden=["top", "bottom", "left", "right"])
 
         # make figure square-shaped
         pylab.gcf().set_figwidth(6.0)
@@ -457,7 +492,7 @@ if __name__ == '__main__':
             pylab.ylabel("Distance (Angstroms)")
         else:
             if not opts["--noframe"]:
-                mplutils.init_spines(hidden=[])
+                init_spines(hidden=[])
             map_obj = pylab.pcolormesh(mat.astype("int"),
                 shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
 
