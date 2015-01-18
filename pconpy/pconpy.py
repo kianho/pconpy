@@ -9,14 +9,14 @@ Description:
     ...
 
 Usage:
-    pcon.py -p PDB [-c CHAINID] -o OUTPUT [options]
+    pconpy.py -p PDB [-c CHAINID] -o OUTPUT [options]
 
 Options:
     -p PDB, --pdb PDB
-    -c CHAINIDS, --chid CHAINIDS    Space-separated list of chain identifiers (defaults to the first chain if left empty).
+    -c CHAINIDS    Space-separated list of chain identifiers (defaults to the first chain if left empty).
     -o OUTPUT, --output OUTPUT
-    -d DIST                     The inter-residue distance measure (see below) [default: CA].
-    -t THRESH                   The contact distance threshold [default: 8.0].
+    -m DIST                     The inter-residue distance measure (see below) [default: CA].
+    -t THRESH                   The contact distance threshold.
     --plaintext                 Generate a plaintext distance/contact matrix
                                 and write to stdout (recommended for
                                 piping into other CLI programs).
@@ -25,16 +25,16 @@ Options:
     --noframe
     -v, --verbose
 
-Distance measures (-d DIST):
-    "CA" -- Conventional CA-CA distance, this is the default distance measure.
-    "CB" -- The CB-CB distance.
+Distance measures (-m DIST):
+    "ca" -- Conventional CA-CA distance, this is the default distance measure.
+    "cb" -- The CB-CB distance.
     "cmass" -- The distance between the residue centers of mass.
     "sccmass" -- The distance between the sidechain centers of mass
     "minvdw" -- The minimum distance between the VDW radii of each residue.
 
 Dependencies:
     docopt
-    prody
+    biopython
     numpy
     matplotlib/pylab
 
@@ -46,30 +46,25 @@ To do:
 """
 
 import mplutils
-import matplotlib
 import matplotlib as mpl
 import os
 import sys
 import re
 import numpy
-import numpy as np
 import pylab
 import tempfile
-import Bio.PDB
 
-from docopt import docopt
 from collections import defaultdict
-from itertools import ifilter, combinations, product
-
-VDW_RADII = \
-    defaultdict(float,
-        { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 })
-
+from itertools import ifilter, product
+from itertools import combinations, combinations_with_replacement
+from docopt import docopt
 
 import Bio.PDB
 
-# The atom names of the backbone and sidechain atoms are based on those found in
-# the `ProDy` module.
+PWD = os.path.dirname(os.path.abspath(__file__))
+
+# The atom names of the backbone and sidechain atoms are based on those defined
+# in the `ProDy` module.
 BACKBONE_ATOMS = set(["CA", "C", "O", "N"])
 BACKBONE_FULL_ATOMS = set(['CA', 'C', 'O', 'N', 'H', 'H1', 'H2', 'H3', 'OXT'])
 
@@ -90,9 +85,27 @@ def is_sidechain(atom):
 def get_backbone_atoms(res):
     return filter(lambda atom : is_backbone(atom), res.get_iterator())
 
-def get_sidechain_atoms(res):
-    return filter(lambda atom : is_sidechain(atom), res.get_iterator())
+def get_sidechain_atoms(res, infer_CB=True):
+    """
 
+    Arguments:
+        res --
+        infer_CB -- infer a virtual CB atom if the residue does not contain
+        sidechain atoms e.g. glycine residues (default: True).
+
+    Returns:
+        ...
+
+    """
+    atoms = filter(lambda atom : is_sidechain(atom), res.get_iterator())
+
+    if (not atoms) and infer_CB:
+        CB_coord = get_atom_coord(res, "CB")
+        CB_atom = Bio.PDB.Atom.Atom("CB", CB_coord,
+                    None, None, None, None, None, "C")
+        atoms = [CB_atom]
+
+    return atoms
 
 
 def pdb_to_ag(pdb_file, chain_id=None):
@@ -114,13 +127,13 @@ def pdb_to_ag(pdb_file, chain_id=None):
     return ag.select("protein")
 
 
-def get_residues(pdb_fn, chain_id=None, model_num=0):
+def get_residues(pdb_fn, chain_ids=None, model_num=0):
     """Build a simple list of residues from a single chain.
 
     Arguments:
         pdb_fn --
-        chain_id --
-        model_num --
+        chain_ids -- (default: None).
+        model_num -- (default: 0).
 
     Returns:
         ...
@@ -133,11 +146,11 @@ def get_residues(pdb_fn, chain_id=None, model_num=0):
     struct = parser.get_structure(pdb_id, pdb_fn)
     model = struct[model_num]
 
-    if chain_id is None:
+    if chain_ids is None:
         # get residues from every chain.
         chains = model.get_list()
     else:
-        chains = [model[chain_id]]
+        chains = [ model[ch_id] for ch_id in chain_ids ]
 
     residues = []
 
@@ -225,7 +238,14 @@ def get_atom_coord(res, atom_name, verbose=False):
 
 
 def calc_center_of_mass(atoms):
-    """
+    """Compute the center of mass from a list of atoms.
+
+    Arguments:
+        atoms -- a list of Bio.PDB.Atom.Atom objects.
+
+    Returns:
+        the center of mass.
+
     """
     return ( numpy.array([(x.mass * x.get_coord()) for x in atoms]).sum()
                 / sum(x.mass for x in atoms) )
@@ -255,12 +275,21 @@ def calc_minvdw_distance(res_a, res_b):
 
 
 def calc_cmass_distance(res_a, res_b, sidechain_only=False):
-    """
+    """Compute the distance between the centres of mass of both residues.
+
+    Arguments:
+        res_a --
+        res_b --
+        sidechain_only --
+
+    Returns:
+        ...
+
     """
 
     if sidechain_only:
-        atoms_a = get_sidechain_atoms(res_a)
-        atoms_b = get_sidechain_atoms(res_b)
+        atoms_a = get_sidechain_atoms(res_a, infer_CB=True)
+        atoms_b = get_sidechain_atoms(res_b, infer_CB=True)
     else:
         atoms_a = res_a.get_list()
         atoms_b = res_b.get_list()
@@ -278,7 +307,7 @@ def calc_distance(res_a, res_b, metric="CA"):
     Arguments:
         res_a --
         res_b --
-        metric --
+        metric -- the distance metric (default: "CA").
 
     Returns:
         ...
@@ -292,8 +321,8 @@ def calc_distance(res_a, res_b, metric="CA"):
         dist = numpy.linalg.norm(A-B)
     elif metric == "cmass":
         dist = calc_cmass_distance(res_a, res_b)
-#   elif metric == "sccmass":
-#       dist = calc_cmass_distance(res_a, res_b, sidechain_only=True)
+    elif metric == "sccmass":
+        dist = calc_cmass_distance(res_a, res_b, sidechain_only=True)
     elif metric == "minvdw":
         dist = calc_minvdw_distance(res_a, res_b)
     else:
@@ -302,6 +331,54 @@ def calc_distance(res_a, res_b, metric="CA"):
     return dist
 
 
+def calc_dist_matrix(residues, metric="CA", threshold=None, symmetric=False):
+    """Calculate the distance matrix for a list of residues.
+
+    Arguments:
+        residues --
+        metric --
+        threshold -- (default: None)
+        symmetric -- (default: False)
+
+    Returns
+        ...
+
+    """
+
+    mat = numpy.zeros((len(residues), len(residues)), dtype="float64")
+
+    # after the distances are added to the upper-triangle, the nan values
+    # indicate the lower matrix values, which are "empty", but can be used to
+    # convey other information if needed.
+    mat[:] = numpy.nan
+
+    # Compute the upper-triangle of the underlying distance matrix.
+    #
+    # TODO:
+    # - parallelise this over multiple processes + show benchmark results.
+    # - use the lower-triangle to convey other information.
+    pair_indices = combinations_with_replacement(xrange(len(residues)), 2)
+
+    for i, j in pair_indices:
+        res_a = residues[i]
+        res_b = residues[j]
+        dist = calc_distance(res_a, res_b, metric)
+
+        mat[i,j] = dist
+
+        symmetric = True
+        if symmetric:
+            mat[j,i] = dist
+
+    # we transpose i with j so the distances are contained only in the
+    # upper-triangle.
+    mat = mat.T
+    mat = numpy.ma.masked_array(mat, numpy.isnan(mat))
+
+    if threshold:
+        mat = numpy.ma.masked_greater_equal(mat, threshold)
+
+    return mat
 
 
 def mat_to_ascii(mat):
@@ -319,89 +396,37 @@ def mat_to_ascii(mat):
     return
 
 
-def make_dist_matrix(residues, metric="ca"):
-    """Calculate the distance matrix for a list of residues.
-
-    Arguments:
-        residues --
-        metric --
-
-    Returns
-        ...
-
-    """
-
-    mat = numpy.zeros((len(residues), len(residues)), dtype="float64")
-
-    # Compute the upper-triangle of the underlying distance matrix.
-    #
-    # TODO:
-    # - parallelise this over multiple processes + show benchmark results.
-    for i, j in combinations(xrange(len(residues)), 2):
-        res_a = residues[i]
-        res_b = residues[j]
-
-        mat[i,j] = calc_distance(res_a, res_b, metric)
-
-    return mat
-
-
-
 if __name__ == '__main__':
     opts = docopt(__doc__)
+
+    if opts["-t"]:
+        opts["-t"] = float(opts["-t"])
+
+    if opts["-c"]:
+        chain_ids = opts["-c"].upper().split(",")
+
+        # Check that pdb chain ids are alphanumeric (see:
+        # http://deposit.rcsb.org/adit/).
+        if not numpy.all(map(str.isalnum, chain_ids)):
+            sys.stderr.write()
 
     residues = get_residues(opts["--pdb"])
 
     #
     # Generate the underlying 2D matrix for the selected plot.
     #
-
-    if opts["-d"] in ("CA", "CB"):
-        # distance between specific atoms.
-        atom_name = opts["-d"].upper()
-        res_coords = []
-
-        for res in residues:
-            try:
-                coord = res[atom_name].getCoords()
-            except KeyError:
-                coord = res["CA"].getCoords()
-            res_coords.append(coord)
-
-        res_coords = np.array(res_coords)
-        mat = pd.measure.buildDistMatrix(res_coords, res_coords)
-    else:
-        mat = np.zeros((len(residues), len(residues)), dtype="float64")
-
-        if opts["-d"] == "minvdw" :
-            for i, res_a in enumerate(residues):
-                for j, res_b in enumerate(residues):
-                    mat[i,j] = calc_minvdw_distance(res_a, res_b)
-        elif opts["-d"] == "cmass":
-            for i, res_a in enumerate(residues):
-                for j, res_b in enumerate(residues):
-                    mat[i,j] = calc_cmass_distance(res_a, res_b)
-        elif opts["-d"] == "sccmass":
-            empty_indices = []
-            for i, res_a in enumerate(residues):
-                for j, res_b in enumerate(residues):
-                    dist = calc_cmass_distance(res_a, res_b, sidechain_only=True)
-                    if dist is None:
-                        empty_indices.append((i,j))
-                        continue
-                    mat[i,j] = dist
-
-            for i, j in empty_indices:
-                mat[i,j] = mat.max()
+    mat = calc_dist_matrix(residues, metric=opts["-m"],
+            threshold=opts["-t"])
 
     if opts["--plaintext"]:
         if opts["-t"] is not None:
+            # Use mask distances below the selected threshold.
             mat = mat < float(opts["-t"])
             fmt = "%d"
         else:
             fmt = "%.3f"
 
-        np.savetxt(sys.stdout, mat, fmt=fmt)
+        numpy.savetxt(sys.stdout, mat, fmt=fmt)
     else:
         mplutils.init_pylab(family=opts["--font"])
 
@@ -431,10 +456,9 @@ if __name__ == '__main__':
             cbar.outline.set_visible(False)
             pylab.ylabel("Distance (Angstroms)")
         else:
-            thresh = float(opts["-t"])
             if not opts["--noframe"]:
                 mplutils.init_spines(hidden=[])
-            map_obj = pylab.pcolormesh((mat < thresh).astype("int"),
+            map_obj = pylab.pcolormesh(mat.astype("int"),
                 shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
 
         if opts["--title"] is not None:
