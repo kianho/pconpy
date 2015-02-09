@@ -79,7 +79,7 @@ VDW_RADII = { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 }
 
 
 #
-# Utilities
+# BioPython enhancements
 #
 
 def is_backbone(atom):
@@ -135,6 +135,8 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     parser = Bio.PDB.PDBParser(pdb_id, pdb_fn)
     struct = parser.get_structure(pdb_id, pdb_fn)
     model = struct[model_num]
+
+    dssp = Bio.PDB.DSSP(model, pdb_fn)
 
     if chain_ids is None:
         # get residues from every chain.
@@ -461,7 +463,7 @@ if __name__ == '__main__':
         else:
             fmt = "%.3f"
 
-        numpy.savetxt(sys.stdout, mat, fmt=fmt)
+        numpy.savetxt(opts["--output"], mat, fmt=fmt)
     else:
         init_pylab(family=opts["--font"])
 
