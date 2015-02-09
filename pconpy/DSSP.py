@@ -42,7 +42,7 @@ The DSSP codes for secondary structure used here are:
     - -        None
 """
 
-from __future__ import print_function
+#from __future__ import print_function
 
 __docformat__ = "restructuredtext en"
 
@@ -339,7 +339,7 @@ class DSSP(AbstractResiduePropertyMap):
                                 res = r
                                 break
 
-            (dssp_index, aa, ss, acc, phi, psi,
+            (aa, ss, acc, phi, psi, dssp_index,
                 NH_O_1_relidx, NH_O_1_energy,
                 O_NH_1_relidx, O_NH_1_energy,
                 NH_O_2_relidx, NH_O_2_energy,
