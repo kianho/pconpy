@@ -62,6 +62,7 @@ from itertools import combinations, combinations_with_replacement
 from docopt import docopt
 
 import Bio.PDB
+import DSSP
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -136,7 +137,7 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     struct = parser.get_structure(pdb_id, pdb_fn)
     model = struct[model_num]
 
-    dssp = Bio.PDB.DSSP(model, pdb_fn)
+    dssp = DSSP.DSSP(model, pdb_fn)
 
     if chain_ids is None:
         # get residues from every chain.
