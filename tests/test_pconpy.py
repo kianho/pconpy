@@ -31,15 +31,10 @@ class TestGeometry:
     # Skeleton fixtures (will use in the future)
     @classmethod
     def setup_class(self):
-        """
-        """
-
         return
 
     @classmethod
     def teardown_class(self):
-        """
-        """
         return
 
     def pdb_id_to_fn(self, pdb_id):
