@@ -28,15 +28,8 @@ publication-quality renderings of contact maps, and the related distance- and
 hydrogen bond maps.
 
 
-## History
+## Useful links
 
-This project was conceived at the beginning of my PhD when I first became
-interested in analysing [known 3D protein structures](http://www.pdb.org) for
-interesting patterns. The project also provided me with one of my first
-opportunities to experiment with the [matplotlib](http://matplotlib.org/) library.
-
-
-## Acknowledgements
-
-Peter Cock's (@peterjc) [tutorial](http://goo.gl/q7DNt7) was especially helpful
-in getting me started with the mechanics of PDB file parsing and visualisation.
+- Peter Cock's (@peterjc) [tutorial](http://goo.gl/q7DNt7) tutorial covers the
+  basics of PDB file parsing and visualisation using the powerful
+  [Biopython](http://biopython.org) library.
