@@ -604,7 +604,7 @@ if __name__ == '__main__':
                 cax = fig.add_axes([box.xmax + pad, box.ymin, width, box.height])
                 cbar = pylab.colorbar(map_obj, drawedges=False, cax=cax)
                 cbar.outline.set_visible(False)
-                pylab.ylabel("Distance (Angstroms)")
+                pylab.ylabel("Distance (angstroms)")
         elif opts["hbmap"]:
             map_obj = pylab.pcolormesh(mat,
                     shading="flat", edgecolors="None", cmap=cmap)
