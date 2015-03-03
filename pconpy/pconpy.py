@@ -294,7 +294,7 @@ def init_spines(hidden=[]):
     Arguments:
         hidden -- list of spines to hide (default=[]). For example, set hidden
         to ["top", "right"] to hide both the top and right axes borders from
-        the plot.
+        the plot. All spines will be hidden if hidden is an empty list.
 
     Returns:
         None
@@ -318,7 +318,7 @@ def init_spines(hidden=[]):
     return
 
 
-def init_pylab(family=None):
+def init_pylab(font_kwargs={}):
     """Initialise and clean up the look and feel of the plotting area.
 
     """
@@ -326,10 +326,8 @@ def init_pylab(family=None):
     mpl.rc("lines", linewidth=px2pt(1))
     mpl.rc("xtick", **{"direction" : "out" })
     mpl.rc("ytick", **{"direction" : "out" })
-    mpl.rc("legend", frameon=False, fontsize=10., numpoints=1)
-
-    if family is not None:
-        mpl.rc("font", **{ "family" : family })
+    mpl.rc("legend", frameon=False, fontsize=font_kwargs["size"], numpoints=1)
+    mpl.rc("font", **font_kwargs)
 
     pylab.tick_params(axis="x", which="both", top="off")
     pylab.tick_params(axis="y", which="both", right="off")
