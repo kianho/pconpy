@@ -9,25 +9,48 @@ Description:
     ...
 
 Usage:
-    pconpy.py -p PDB [-c CHAINID] -o OUTPUT [options]
+    pconpy.py cmap <dist> -p <pdb> -o <file> [options]
+    pconpy.py dmap -p <pdb> -o <file> [options]
+    pconpy.py hbmap -p <pdb> -o <file> [options]
 
 Options:
-    -p PDB, --pdb PDB
-    -c CHAINIDS    Space-separated list of chain identifiers (defaults to the first chain if left empty).
-    -o OUTPUT, --output OUTPUT
-    -m DIST                     The inter-residue distance measure (see below) [default: CA].
-    -t THRESH                   The contact distance threshold.
+    -p, --pdb <pdb>             The PDB file.
+    -c <chain-ids>              Comma-separated list of chain identifiers
+                                (defaults to the first chain).
+    -o, --output <file>         Save the plot to a file. The file format is
+                                determined by the file extension.
+    -m, --measure <measure>     The inter-residue distance measure (see below)
+                                [default: CA].
+    -M, --mask-thresh <dist>    Hide the distances below a given threshold (in
+                                angstroms).
     --plaintext                 Generate a plaintext distance/contact matrix
                                 and write to stdout (recommended for
                                 piping into other CLI programs).
+    --symmetric                 Display the plot on both the upper- and
+                                lower-triangles.
+
     --title TITLE               The title of the plot (optional).
-    --font FONT                 Set the font family (via matplotlib).
-    --noframe
+    --xlabel <label>            X-axis label [default: Residue index].
+    --ylabel <label>            Y-axis label [default: Residue index].
+
+    --font-family <font>        Font family (via matplotlib) [default: sans].
+    --font-size <size>          Font size in points [default: 10].
+
+    --width-inches <width>      Width of the plot in inches [default: 6.0].
+    --height-inches <height>    Height of the plot in inches [default: 6.0].
+    --dpi <dpi>                 Set the plot DPI [default: 80]
+
+    --greyscale                 Generate a greyscale distance map.
+    --no-colorbar               Hide the color bar on distance maps.
+    --transparent               Set the background to transparent.
+    --show-frame
+
+    -D                          Development mode only.
     -v, --verbose
 
-Distance measures (-m DIST):
-    "ca" -- Conventional CA-CA distance, this is the default distance measure.
-    "cb" -- The CB-CB distance.
+Distance measures (i.e --measure ___):
+    "CA" -- Conventional CA-CA distance, this is the default distance measure.
+    "CB" -- The CB-CB distance.
     "cmass" -- The distance between the residue centers of mass.
     "sccmass" -- The distance between the sidechain centers of mass
     "minvdw" -- The minimum distance between the VDW radii of each residue.
@@ -36,12 +59,7 @@ Dependencies:
     docopt
     biopython
     numpy
-    matplotlib/pylab
-
-To do:
-    - centres-of-mass distance
-    - optional colour bar for distance map
-    - greyscale distance map
+    matplotlib
 
 """
 
