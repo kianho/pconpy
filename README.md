@@ -11,8 +11,8 @@ published as:
 The full article is accessible
 [here](http://bioinformatics.oxfordjournals.org/content/24/24/2934.full).
 
-The original source code associated with the article can be accessed from the
-`legacy` branch of this repository.
+The original source code associated with the article is obsolete but can still be accessed from the
+[`legacy` branch](https://github.com/kianho/pconpy/tree/legacy) of this repository.
 
 
 ## About
@@ -30,6 +30,6 @@ hydrogen bond maps.
 
 ## Useful links
 
-- Peter Cock's (@peterjc) [tutorial](http://goo.gl/q7DNt7) tutorial covers the
+- Peter Cock's (@peterjc) [tutorial](http://goo.gl/q7DNt7) covers the
   basics of PDB file parsing and visualisation using the powerful
   [Biopython](http://biopython.org) library.
