@@ -96,6 +96,7 @@ BACKBONE_FULL_ATOMS = set(['CA', 'C', 'O', 'N', 'H', 'H1', 'H2', 'H3', 'OXT'])
 #
 VDW_RADII = { "N" : 1.55, "C" : 1.70,"H" : 1.20, "O" : 1.52, "S": 1.85 }
 
+DSSP_HB_THRESH = -0.5
 
 #
 # BioPython enhancements
@@ -227,6 +228,55 @@ def get_atom_coord(res, atom_name, verbose=False):
     return coord
 
 
+def get_hbond_info(res):
+    """
+
+    """
+
+    acc1 = { "index" : res.xtra["DSSP_INDEX"] + res.xtra["O_NH_1_RELIDX_DSSP"],
+             "energy" : res.xtra["O_NH_1_ENERGY_DSSP"] }
+    acc2 = { "index" : res.xtra["DSSP_INDEX"] + res.xtra["O_NH_2_RELIDX_DSSP"],
+             "energy" : res.xtra["O_NH_2_ENERGY_DSSP"] }
+
+    don1 = { "index" : res.xtra["DSSP_INDEX"] + res.xtra["NH_O_1_RELIDX_DSSP"],
+             "energy" : res.xtra["NH_O_1_ENERGY_DSSP"] }
+    don2 = { "index" : res.xtra["DSSP_INDEX"] + res.xtra["NH_O_2_RELIDX_DSSP"],
+             "energy" : res.xtra["NH_O_2_ENERGY_DSSP"] }
+
+    return { "acc1" : acc1, "acc2" : acc2, "don1" : don1, "don2" : don2 }
+
+
+def is_parallel(r1, r2):
+    v1 = get_atom_coord(r1, "C") - get_atom_coord(r1, "N")
+    v2 = get_atom_coord(r2, "C") - get_atom_coord(r2, "N")
+    return v1.dot(v2) > 0
+
+
+
+def is_hbond(res_a, res_b, hb_thresh=-0.5):
+    """
+    """
+
+    def is_recip(_res_a, _res_b):
+        hbond_a = get_hbond_info(_res_a)
+        hbond_b = get_hbond_info(_res_b)
+
+        res_a_index = _res_a.xtra["DSSP_INDEX"]
+        res_b_index = _res_b.xtra["DSSP_INDEX"]
+
+        return \
+            ( ( hbond_a["don1"]["index"] == res_b_index and
+                hbond_a["don1"]["energy"] < hb_thresh ) or
+              ( hbond_a["don2"]["index"] == res_b_index and
+                hbond_a["don2"]["energy"] < hb_thresh ) ) and \
+            ( ( hbond_b["acc1"]["index"] == res_a_index and
+                hbond_b["acc1"]["energy"] < hb_thresh ) or
+              ( hbond_b["acc2"]["index"] == res_a_index and
+                hbond_b["acc2"]["energy"] < hb_thresh ) )
+
+    return is_recip(res_a, res_b) or is_recip(res_b, res_a) 
+
+
 #
 # Plotting
 #
@@ -356,47 +406,46 @@ def calc_cmass_distance(res_a, res_b, sidechain_only=False):
     return numpy.linalg.norm(A-B)
 
 
-def calc_distance(res_a, res_b, metric="CA"):
-    """Calculate the Euclidean distance between a pair of residues according to
-    a given distance metric.
+def calc_distance(res_a, res_b, measure="CA"):
+    """Calculate the (L2) Euclidean distance between a pair of residues
+    according to a given distance metric.
 
     Arguments:
         res_a --
         res_b --
-        metric -- the distance metric (default: "CA").
+        measure -- the distance measure (default: "CA").
 
     Returns:
         ...
 
     """
 
-    if metric in ("CA", "CB"):
-        A = get_atom_coord(res_a, metric)
-        B = get_atom_coord(res_b, metric)
-
+    if measure in ("CA", "CB"):
+        A = get_atom_coord(res_a, measure)
+        B = get_atom_coord(res_b, measure)
         dist = numpy.linalg.norm(A-B)
-    elif metric == "cmass":
+    elif measure == "cmass":
         dist = calc_cmass_distance(res_a, res_b)
-    elif metric == "sccmass":
+    elif measure == "sccmass":
         dist = calc_cmass_distance(res_a, res_b, sidechain_only=True)
-    elif metric == "minvdw":
+    elif measure == "minvdw":
         dist = calc_minvdw_distance(res_a, res_b)
+    elif measure == "hb":
+        dist = is_hbond(res_a, res_b)
     else:
         raise NotImplementedError
 
     return dist
 
 
-def calc_dist_matrix(residues, metric="CA", threshold=None, symmetric=False):
+def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
+        mask_thresh=None, symmetric=False):
     """Calculate the distance matrix for a list of residues.
 
     Arguments:
-        residues --
-        metric --
-        threshold -- (default: None)
-        symmetric -- (default: False)
+        ...
 
-    Returns
+    Returns:
         ...
 
     """
@@ -418,21 +467,23 @@ def calc_dist_matrix(residues, metric="CA", threshold=None, symmetric=False):
     for i, j in pair_indices:
         res_a = residues[i]
         res_b = residues[j]
-        dist = calc_distance(res_a, res_b, metric)
+        dist = calc_distance(res_a, res_b, measure)
 
         mat[i,j] = dist
 
-        symmetric = False
         if symmetric:
             mat[j,i] = dist
 
-    # we transpose i with j so the distances are contained only in the
+    # transpose i with j so the distances are contained only in the
     # upper-triangle.
     mat = mat.T
     mat = numpy.ma.masked_array(mat, numpy.isnan(mat))
 
-    if threshold:
-        mat = numpy.ma.masked_greater_equal(mat, threshold)
+    if dist_thresh:
+        mat = mat < dist_thresh
+
+    if mask_thresh:
+        mat = numpy.ma.masked_greater_equal(mat, mask_thresh)
 
     return mat
 
@@ -452,11 +503,33 @@ def mat_to_ascii(mat):
     return
 
 
+def do_dev():
+    pdb_id = "1ubq"
+    pdb_fn = os.path.join("../tests/pdb_files", "{}.pdb".format(pdb_id))
+    residues = get_residues(pdb_fn)
+
+    # find the shared hydrogen-bond relationships
+    pair_indices = combinations_with_replacement(xrange(len(residues)), 2)
+
+    for i, j in pair_indices:
+        res_a, res_b = residues[i], residues[j]
+        print res_a, res_b, is_hbond(res_a, res_b)
+
+    return
+
+
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
-    if opts["-t"]:
-        opts["-t"] = float(opts["-t"])
+    if opts["-D"]:
+        do_dev()
+        sys.exit()
+
+    if opts["<dist>"]:
+        opts["<dist>"] = float(opts["<dist>"])
+
+    if opts["--mask-thresh"]:
+        opts["--mask-thresh"] = float(opts["--mask-thresh"])
 
     if opts["-c"]:
         chain_ids = opts["-c"].upper().split(",")
@@ -466,16 +539,22 @@ if __name__ == '__main__':
         if not numpy.all(map(str.isalnum, chain_ids)):
             sys.stderr.write()
 
+    if opts["hbmap"]:
+        measure = "hb"
+    else:
+        measure = opts["--measure"]
+
     residues = get_residues(opts["--pdb"])
 
     #
     # Generate the underlying 2D matrix for the selected plot.
     #
-    mat = calc_dist_matrix(residues, metric=opts["-m"],
-            threshold=opts["-t"])
+    mat = calc_dist_matrix(residues, measure=measure,
+            dist_thresh=opts["<dist>"], mask_thresh=opts["--mask-thresh"],
+            symmetric=opts["--symmetric"])
 
     if opts["--plaintext"]:
-        if opts["-t"] is not None:
+        if opts["cmap"] is not None:
             # Use mask distances below the selected threshold.
             mat = mat < float(opts["-t"])
             fmt = "%d"
@@ -484,40 +563,58 @@ if __name__ == '__main__':
 
         numpy.savetxt(opts["--output"], mat, fmt=fmt)
     else:
-        init_pylab(family=opts["--font"])
+        font_kwargs = {
+                "family" : opts["--font-family"],
+                "size" : float(opts["--font-size"]) }
+
+        init_pylab(font_kwargs)
 
         # hide all the spines i.e. no axes are drawn
         init_spines(hidden=["top", "bottom", "left", "right"])
 
         # make figure square-shaped
-        pylab.gcf().set_figwidth(6.0)
-        pylab.gcf().set_figheight(6.0)
+        pylab.gcf().set_figwidth(float(opts["--width-inches"]))
+        pylab.gcf().set_figheight(float(opts["--height-inches"]))
 
         pylab.xlim(0, len(residues))
         pylab.ylim(0, len(residues))
 
-        pylab.xlabel("Residue index")
-        pylab.ylabel("Residue index")
+        pylab.xlabel(opts["--xlabel"])
+        pylab.ylabel(opts["--ylabel"])
 
         ax, fig = pylab.gca(), pylab.gcf()
 
-        if opts["-t"] is None:
-            map_obj = pylab.pcolormesh(mat, shading="flat", edgecolors="None", cmap=mpl.cm.jet_r)
+        if opts["--show-frame"]:
+            init_spines(hidden=[])
 
-            # draw the colour bar
-            box = ax.get_position()
-            pad, width = 0.02, 0.02
-            cax = fig.add_axes([box.xmax + pad, box.ymin, width, box.height])
-            cbar = pylab.colorbar(map_obj, drawedges=False, cax=cax)
-            cbar.outline.set_visible(False)
-            pylab.ylabel("Distance (Angstroms)")
+        if opts["--greyscale"] or opts["cmap"] or opts["hbmap"]:
+            cmap = mpl.cm.Greys
         else:
-            if not opts["--noframe"]:
-                init_spines(hidden=[])
-            map_obj = pylab.pcolormesh(mat.astype("int"),
-                shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
+            cmap = mpl.cm.jet_r
+
+        if opts["cmap"] or opts["hbmap"]:
+            map_obj = pylab.pcolormesh(mat,
+                    shading="flat", edgecolors="None", cmap=cmap)
+        elif opts["dmap"]:
+            map_obj = pylab.pcolormesh(mat, shading="flat",
+                    edgecolors="None", cmap=cmap)
+
+            if not opts["--no-colorbar"]:
+                # draw the colour bar
+                box = ax.get_position()
+                pad, width = 0.02, 0.02
+                cax = fig.add_axes([box.xmax + pad, box.ymin, width, box.height])
+                cbar = pylab.colorbar(map_obj, drawedges=False, cax=cax)
+                cbar.outline.set_visible(False)
+                pylab.ylabel("Distance (Angstroms)")
+        elif opts["hbmap"]:
+            map_obj = pylab.pcolormesh(mat,
+                    shading="flat", edgecolors="None", cmap=cmap)
+        else:
+            raise NotImplementedError
 
         if opts["--title"] is not None:
             ax.set_title(opts["--title"], fontweight="bold")
 
-        pylab.savefig(opts["--output"], bbox_inches="tight")
+        pylab.savefig(opts["--output"], bbox_inches="tight",
+                dpi=int(opts["--dpi"]), transparent=opts["--transparent"])
