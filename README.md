@@ -17,6 +17,11 @@ The full article is accessible
 The original source code associated with the article is obsolete but can still be accessed from the
 [`legacy` branch](https://github.com/kianho/pconpy/tree/legacy) of this repository.
 
+## Usage example
+Generate a contact map from chain A (```-c A```) of the ubiquitin PDB file (```-p 1ubq.pdb```) at an 8 angstrom C-alpha to C-alpha contact threshold (```-m CA```). The contact map is rendered as a PNG file (```-o 1ubq.png```).
+```bash
+python ./pconpy/pconpy.py cmap 8.0 -p 1ubq.pdb -c A -o 1ubq.png -m CA 
+```
 
 ## About
 
