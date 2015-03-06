@@ -23,9 +23,18 @@ The original source code associated with the article is obsolete but can still b
 - Hydrogen bond maps can be generated. 
 
 ## Usage examples
-Generate a contact map from chain A (```-c A```) of the ubiquitin PDB file (```-p 1ubq.pdb```) at an 8 angstrom C-alpha to C-alpha contact threshold (```-m CA```). The contact map is rendered as a PNG file (```-o 1ubq.png```).
+Generate a contact map from chain A of ```1ubq.pdb``
+using the CA-CA distance measure at an 8 angstrom contact threshold,
+rendered as a PDF file.
 ```bash
-python ./pconpy/pconpy.py cmap 8.0 -p 1ubq.pdb -c A -o 1ubq.png -m CA 
+python ./pconpy/pconpy.py cmap 8.0 --pdb 1ubq.pdb -c A --output 1ubqA_cmap.pdf --measure CA 
+```
+
+Generate a distance map from chains A and B of ```1mtp.pdb``` using the CA-CA
+distance measure, rendered as a PNG file.
+```bash
+python ./pconpy/pconpy.py dmap --pdb 1mtp.pdb -c A --output 1mtpAB_dmap.png --measure CA 
+```
 
 ## About
 
