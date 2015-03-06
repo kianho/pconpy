@@ -17,6 +17,10 @@ The full article is accessible
 The original source code associated with the article is obsolete but can still be accessed from the
 [`legacy` branch](https://github.com/kianho/pconpy/tree/legacy) of this repository.
 
+## Current status
+### March 6, 2015
+- Distance and contact maps can only be generated using the CA-CA distance measure at the moment. The remaining measures are still in development.
+- Hydrogen bond maps can be generated. 
 
 ## About
 
