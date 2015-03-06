@@ -36,7 +36,7 @@ python ./pconpy/pconpy.py dmap --pdb 1mtp.pdb -c A --output 1mtpAB_dmap.png --me
 
 # Generate a hydrogen bond matrix from chain A of 1ubq.pdb, saving it  
 # to a plain text file (for use in an existing pipeline).
-python ./pconpy/pconpy.py hbmap --pdb 1ubq.pdb -c A --output 1ubq.txt
+python ./pconpy/pconpy.py hbmap --pdb 1ubq.pdb -c A --plaintext --output 1ubq.txt
 ```
 
 ## About
