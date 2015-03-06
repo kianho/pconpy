@@ -19,7 +19,7 @@ The original source code associated with the article is obsolete but can still b
 
 ## Current status
 ### March 6, 2015
-- Distance and contact maps can only be generated using the CA-CA distance measure at the moment. The remaining measures are still in development.
+- Distance and contact maps can be generated using only the CA-CA distance measure. The remaining measures are still in development.
 - Hydrogen bond maps can be generated. 
 
 ## About
