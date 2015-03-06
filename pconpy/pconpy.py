@@ -45,7 +45,7 @@ Options:
     --show-frame
 
     -D                          Development mode only.
-    -v, --verbose
+    -v, --verbose               Verbose mode.
 
 Distance measures (i.e --measure ___):
     "CA" -- Conventional CA-CA distance, this is the default distance measure.
@@ -443,7 +443,7 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
         ...
 
     Returns:
-        ...
+        The distance matrix as a masked array.
 
     """
 
@@ -465,7 +465,6 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
         res_a = residues[i]
         res_b = residues[j]
         dist = calc_distance(res_a, res_b, measure)
-
         mat[i,j] = dist
 
         if symmetric:
@@ -476,7 +475,7 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
     mat = mat.T
     mat = numpy.ma.masked_array(mat, numpy.isnan(mat))
 
-    if dist_thresh:
+    if dist_thresh is not None:
         mat = mat < dist_thresh
 
     if mask_thresh:
@@ -521,6 +520,9 @@ if __name__ == '__main__':
     if opts["-D"]:
         DEV_MODE = True
 
+    if DEV_MODE:
+        print opts
+
     if opts["<dist>"]:
         opts["<dist>"] = float(opts["<dist>"])
 
@@ -534,9 +536,6 @@ if __name__ == '__main__':
         # http://deposit.rcsb.org/adit/).
         if not numpy.all(map(str.isalnum, chain_ids)):
             sys.stderr.write()
-
-    if DEV_MODE:
-        print opts
 
     if opts["hbmap"]:
         measure = "hb"
@@ -553,14 +552,14 @@ if __name__ == '__main__':
             symmetric=opts["--symmetric"])
 
     if opts["--plaintext"]:
-        if opts["cmap"] is not None:
+        if opts["cmap"] or opts["hbmap"]:
             # Use mask distances below the selected threshold.
-            mat = mat < float(opts["-t"])
+            #mat = mat < float(opts["-t"])
             fmt = "%d"
         else:
             fmt = "%.3f"
 
-        numpy.savetxt(opts["--output"], mat, fmt=fmt)
+        numpy.savetxt(opts["--output"], mat.filled(0), fmt=fmt)
     else:
         font_kwargs = {
                 "family" : opts["--font-family"],
