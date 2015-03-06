@@ -19,8 +19,7 @@ Options:
                                 (defaults to the first chain).
     -o, --output <file>         Save the plot to a file. The file format is
                                 determined by the file extension.
-    -m, --measure <measure>     The inter-residue distance measure (see below)
-                                [default: CA].
+    -m, --measure <measure>     The inter-residue distance measure [default: CA].
     -M, --mask-thresh <dist>    Hide the distances below a given threshold (in
                                 angstroms).
     --plaintext                 Generate a plaintext distance/contact matrix
@@ -82,6 +81,7 @@ from docopt import docopt
 import Bio.PDB
 import DSSP
 
+DEV_MODE = False
 PWD = os.path.dirname(os.path.abspath(__file__))
 
 # The atom names of the backbone and sidechain atoms are based on those defined
@@ -250,7 +250,6 @@ def is_parallel(r1, r2):
     v1 = get_atom_coord(r1, "C") - get_atom_coord(r1, "N")
     v2 = get_atom_coord(r2, "C") - get_atom_coord(r2, "N")
     return v1.dot(v2) > 0
-
 
 
 def is_hbond(res_a, res_b, hb_thresh=-0.5):
@@ -520,8 +519,7 @@ if __name__ == '__main__':
     opts = docopt(__doc__)
 
     if opts["-D"]:
-        do_dev()
-        sys.exit()
+        DEV_MODE = True
 
     if opts["<dist>"]:
         opts["<dist>"] = float(opts["<dist>"])
@@ -536,6 +534,9 @@ if __name__ == '__main__':
         # http://deposit.rcsb.org/adit/).
         if not numpy.all(map(str.isalnum, chain_ids)):
             sys.stderr.write()
+
+    if DEV_MODE:
+        print opts
 
     if opts["hbmap"]:
         measure = "hb"
