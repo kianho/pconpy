@@ -1,6 +1,9 @@
 PConPy—a Python module for generating 2D protein maps
 =====================================================
 
+![1ubq CA-CA distance map](images/1ubq-dmap-CA.png)
+![1ubq CA-CA contact map](images/1ubq-cmap-CA.png)
+
 This is the official repository for the redevelopment of PConPy, previously
 published as:
 
