@@ -15,7 +15,7 @@ The full article is accessible
 [here](http://bioinformatics.oxfordjournals.org/content/24/24/2934.full).
 
 The original source code associated with the article is obsolete but can still be accessed from the
-[`legacy` branch](https://github.com/kianho/pconpy/tree/legacy) of this repository.
+[`legacy`](https://github.com/kianho/pconpy/tree/legacy) branch of this repository.
 
 ## Current status
 ### March 6, 2015
