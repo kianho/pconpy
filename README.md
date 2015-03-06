@@ -22,6 +22,11 @@ The original source code associated with the article is obsolete but can still b
 - Distance and contact maps can be generated using only the CA-CA distance measure. The remaining measures are still in development.
 - Hydrogen bond maps can be generated. 
 
+## Usage examples
+Generate a contact map from chain A (```-c A```) of the ubiquitin PDB file (```-p 1ubq.pdb```) at an 8 angstrom C-alpha to C-alpha contact threshold (```-m CA```). The contact map is rendered as a PNG file (```-o 1ubq.png```).
+```bash
+python ./pconpy/pconpy.py cmap 8.0 -p 1ubq.pdb -c A -o 1ubq.png -m CA 
+
 ## About
 
 A [_contact map_](http://en.wikipedia.org/wiki/Protein_contact_map) is a 2D

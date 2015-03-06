@@ -5,9 +5,6 @@
 Author:
     Kian Ho <hui.kian.ho@gmail.com>
 
-Description:
-    ...
-
 Usage:
     pconpy.py cmap <dist> -p <pdb> -o <file> [options]
     pconpy.py dmap -p <pdb> -o <file> [options]
@@ -47,7 +44,7 @@ Options:
     -D                          Development mode only.
     -v, --verbose               Verbose mode.
 
-Distance measures (i.e --measure ___):
+Distance measures:
     "CA" -- Conventional CA-CA distance, this is the default distance measure.
     "CB" -- The CB-CB distance.
     "cmass" -- The distance between the residue centers of mass.
