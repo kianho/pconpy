@@ -7,19 +7,20 @@ PConPy—a Python module for generating 2D protein maps
 This is the official repository for the redevelopment of PConPy, previously
 published as:
 
-    Hui Kian Ho, Michael J. Kuiper, and Kotagiri Ramamohanarao (2008). “PConPy–a
-    Python module for generating 2D protein maps”. In: Bioinformatics 24,
-    pp. 2934-2935.
+- H. Ho, M. Kuiper and R. Kotagiri, "PConPy--a Python module for generating 2D
+  protein maps", _Bioinformatics_, vol. 24, no. 24, pp. 2934-2935, 2008.  
+  ([article](dx.doi.org/10.1093/bioinformatics/btn566))
 
-The full article is accessible
-[here](http://bioinformatics.oxfordjournals.org/content/24/24/2934.full).
-
-The original source code associated with the article is obsolete but can still be accessed from the
-[`legacy`](https://github.com/kianho/pconpy/tree/legacy) branch of this repository.
+The original (now deprecated) source code associated with the article is
+accessible from the [`legacy`](https://github.com/kianho/pconpy/tree/legacy)
+branch of this repository.
 
 ## Current status
 ### March 6, 2015
-- Distance and contact maps can be generated using only the CA-CA distance measure. The remaining measures are still in development.
+
+- Distance and contact maps can be generated using only the CA-CA distance
+  measure. The remaining measures are still in development.
+
 - Hydrogen bond maps can be generated. 
 
 ## Usage examples
@@ -50,6 +51,19 @@ matrix_, can naturally be used as numeric input in subsequent automated
 knowledge discovery or machine learning tasks. PConPy generates
 publication-quality renderings of contact maps, and the related distance- and
 hydrogen bond maps.
+
+
+## Who's using PConPy?
+
+- B. Konopka, M. Ciombor, M. Kurczynska and M. Kotulska, "Automated
+  Procedure for Contact-Map-Based Protein Structure Reconstruction", The
+  _Journal of Membrane Biology_, vol. 247, no. 5, pp. 409-420, 2014.  
+  ([article](dx.doi.org/10.1186/1471-2105-10-153))
+
+- A. Stivala, A. Wirth and P. Stuckey, "Tableau-based protein
+  substructure search using quadratic programming", _BMC Bioinformatics_, vol.
+  10, no. 1, p. 153, 2009.  
+  ([article](dx.doi.org/10.1007/s00232-014-9648-x))
 
 
 ## Useful links
