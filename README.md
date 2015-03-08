@@ -81,7 +81,7 @@ hydrogen bond maps.
   [[article](http://dx.doi.org/10.1186/1471-2105-10-153)]
 
 - A. Stivala, A. Wirth and P. Stuckey, Tableau-based protein
-  substructure search using quadratic programming, _BMC Bioinformatics_, vol.
+  substructure search using quadratic programming, BMC Bioinformatics, vol.
   10, no. 1, p. 153, 2009.
   [[article](http://dx.doi.org/10.1007/s00232-014-9648-x)]
 
