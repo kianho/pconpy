@@ -111,7 +111,7 @@ def get_backbone_atoms(res):
     return filter(lambda atom : is_backbone(atom), res.get_iterator())
 
 
-def get_sidechain_atoms(res, infer_CB=True):
+def get_sidechain_atoms(res, infer_CB=False):
     """
 
     Arguments:
@@ -125,11 +125,16 @@ def get_sidechain_atoms(res, infer_CB=True):
     """
     atoms = filter(lambda atom : is_sidechain(atom), res.get_iterator())
 
-    if (not atoms) and infer_CB:
-        CB_coord = get_atom_coord(res, "CB")
-        CB_atom = Bio.PDB.Atom.Atom("CB", CB_coord,
-                    None, None, None, None, None, "C")
-        atoms = [CB_atom]
+    if (not atoms):
+        if infer_CB:
+            CB_coord = get_atom_coord(res, "CB")
+            CB_atom = Bio.PDB.Atom.Atom("CB", CB_coord,
+                        None, None, None, None, None, "C")
+            atoms = [CB_atom]
+        else:
+            # Use the CA atom if there are no sidechain atoms.
+            assert("CA" in res)
+            atoms = [res["CA"]]
 
     return atoms
 
@@ -209,6 +214,8 @@ def get_atom_coord(res, atom_name, verbose=False):
         assert("CA" in res)
         assert("C" in res)
 
+        # Infer the CB atom position
+        #
         # NOTE:
         # These are Bio.PDB.Vector objects and _not_ numpy arrays.
         N = res["N"].get_vector()
@@ -338,7 +345,7 @@ def init_pylab(font_kwargs={}):
 #
 
 def calc_center_of_mass(atoms):
-    """Compute the center of mass from a list of atoms.
+    """Compute the center of mass from a collection of atoms.
 
     Arguments:
         atoms -- a list of Bio.PDB.Atom.Atom objects.
@@ -347,8 +354,11 @@ def calc_center_of_mass(atoms):
         the center of mass.
 
     """
-    return ( numpy.array([(x.mass * x.get_coord()) for x in atoms]).sum()
-                / sum(x.mass for x in atoms) )
+
+    coords = [a.get_coord() for a in atoms]
+    weights = [a.mass for a in atoms]
+
+    return numpy.average(coords, weights=weights, axis=0)
 
 
 def calc_minvdw_distance(res_a, res_b):
@@ -388,8 +398,8 @@ def calc_cmass_distance(res_a, res_b, sidechain_only=False):
     """
 
     if sidechain_only:
-        atoms_a = get_sidechain_atoms(res_a, infer_CB=True)
-        atoms_b = get_sidechain_atoms(res_b, infer_CB=True)
+        atoms_a = get_sidechain_atoms(res_a)
+        atoms_b = get_sidechain_atoms(res_b)
     else:
         atoms_a = res_a.get_list()
         atoms_b = res_b.get_list()
