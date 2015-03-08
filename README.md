@@ -7,7 +7,7 @@ PConPy
 ![1ubq CA-CA contact map](images/1ubq-cmap-CA.png)
 
 This is the official repository for the redevelopment of PConPy, please cite our paper
-if you use PConPy:
+if you use PConPy in your research:
 
 - H. Ho, M. Kuiper and R. Kotagiri, "PConPy—a Python module for generating 2D
   protein maps", Bioinformatics, vol. 24, no. 24, pp. 2934-2935, 2008.
