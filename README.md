@@ -18,8 +18,29 @@ accessible from the [`legacy`](https://github.com/kianho/pconpy/tree/legacy)
 branch of this repository.
 
 ## Installation
+In the root directory:
 
-TODO
+```
+python setup.py install
+```
+
+### Dependencies
+PConPy was developed using Python 2.7 using the following libraries:
+- _NumPy_, _BioPython_, _Matplotlib_, and _docopt_.
+
+they can be installed  via ``pip``:
+```
+pip install numpy biopython matplotlib docopt
+```
+or via ``apt-get`` using Ubuntu:
+```
+sudo apt-get install python-numpy python-biopython python-matplotlib python-docopt
+```  
+or via the [Anaconda Python Distribution](http://continuum.io/downloads):
+```
+conda install numpy biopython matplotlib docopt
+```
+
 
 ## Example usage
 Generate a PDF contact map using the CA-CA distance measure:
