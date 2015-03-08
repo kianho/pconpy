@@ -6,11 +6,11 @@ PConPy
 ![1ubq CA-CA distance map](images/1ubq-dmap-CA.png)
 ![1ubq CA-CA contact map](images/1ubq-cmap-CA.png)
 
-This is the official repository for the redevelopment of PConPy, previously
-published as:
+This is the official repository for the redevelopment of PConPy, please cite our paper
+if you use PConPy:
 
 - H. Ho, M. Kuiper and R. Kotagiri, "PConPy—a Python module for generating 2D
-  protein maps", _Bioinformatics_, vol. 24, no. 24, pp. 2934-2935, 2008.
+  protein maps", Bioinformatics, vol. 24, no. 24, pp. 2934-2935, 2008.
   [[article](http://10.1093/bioinformatics/btn566)]
 
 The original (now deprecated) source code associated with the article is
@@ -77,11 +77,11 @@ hydrogen bond maps.
 
 - B. Konopka, M. Ciombor, M. Kurczynska and M. Kotulska, "Automated
   Procedure for Contact-Map-Based Protein Structure Reconstruction", The
-  _Journal of Membrane Biology_, vol. 247, no. 5, pp. 409-420, 2014.
+  Journal of Membrane Biology, vol. 247, no. 5, pp. 409-420, 2014.
   [[article](http://dx.doi.org/10.1186/1471-2105-10-153)]
 
-- A. Stivala, A. Wirth and P. Stuckey, "Tableau-based protein
-  substructure search using quadratic programming", _BMC Bioinformatics_, vol.
+- A. Stivala, A. Wirth and P. Stuckey, Tableau-based protein
+  substructure search using quadratic programming, _BMC Bioinformatics_, vol.
   10, no. 1, p. 153, 2009.
   [[article](http://dx.doi.org/10.1007/s00232-014-9648-x)]
 
