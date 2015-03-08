@@ -22,8 +22,7 @@ Options:
     --plaintext                 Generate a plaintext distance/contact matrix
                                 and write to stdout (recommended for
                                 piping into other CLI programs).
-    --symmetric                 Display the plot on both the upper- and
-                                lower-triangles.
+    --asymmetric                Display the plot only in the upper-triangle.
 
     --title TITLE               The title of the plot (optional).
     --xlabel <label>            X-axis label [default: Residue index].
@@ -443,7 +442,7 @@ def calc_distance(res_a, res_b, measure="CA"):
 
 
 def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
-        mask_thresh=None, symmetric=False):
+        mask_thresh=None, asymmetric=False):
     """Calculate the distance matrix for a list of residues.
 
     Arguments:
@@ -474,7 +473,7 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
         dist = calc_distance(res_a, res_b, measure)
         mat[i,j] = dist
 
-        if symmetric:
+        if not asymmetric:
             mat[j,i] = dist
 
     # transpose i with j so the distances are contained only in the
@@ -556,7 +555,7 @@ if __name__ == '__main__':
     #
     mat = calc_dist_matrix(residues, measure=measure,
             dist_thresh=opts["<dist>"], mask_thresh=opts["--mask-thresh"],
-            symmetric=opts["--symmetric"])
+            asymmetric=opts["--asymmetric"])
 
     if opts["--plaintext"]:
         if opts["cmap"] or opts["hbmap"]:
