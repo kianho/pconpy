@@ -92,6 +92,7 @@ hydrogen bond maps.
   basics of PDB file parsing and visualisation using the powerful
   [Biopython](http://biopython.org) library.
 
-## Contributors and acknowledegments
+
+## Contributors
 
 See [CONTRIBUTORS.md](CONTRIBUTORS.md)
