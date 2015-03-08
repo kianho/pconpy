@@ -139,15 +139,15 @@ def get_sidechain_atoms(res, infer_CB=False):
 
 
 def get_residues(pdb_fn, chain_ids=None, model_num=0):
-    """Build a simple list of residues from a single chain.
+    """Build a simple list of residues from a single chain of a PDB file.
 
     Arguments:
-        pdb_fn --
-        chain_ids -- (default: None).
-        model_num -- (default: 0).
+        pdb_fn: The path to a PDB file.
+        chain_ids: A list of single-character chain identifiers.
+        model_num: The model number in the PDB file to use (optional).
 
     Returns:
-        ...
+        A list of Bio.PDB.Residue objects.
 
     """
 
@@ -182,19 +182,16 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
 
 
 def get_atom_coord(res, atom_name, verbose=False):
-    """
-    If the CB coordinate exists, return it, otherwise compute a
-    virtual CB coordinate by rotating the N atom -120 degrees around the CA-C
-    vector. This will occur with Glycine residues which don't have sidechain
-    atoms.
+    """Get the atomic coordinate of a single atom in a residue. This function wraps the
+    ``Bio.PDB.Residue.get_coord()`` function to infer CB coordinates if required.
 
-    Arguments:
-        res --
-        atom_name --
-        verbose --
+    Args:
+        res: A Bio.PDB.Residue object.
+        atom_name: The name of the atom (e.g. "CA" for alpha-carbon).
+        verbose: Display diagnostic messages to stderr (optional).
 
-    Reference:
-        http://goo.gl/OaNjxe
+    Returns:
+        The coordinate of the specified atom.
 
     """
 
@@ -213,7 +210,7 @@ def get_atom_coord(res, atom_name, verbose=False):
         assert("CA" in res)
         assert("C" in res)
 
-        # Infer the CB atom position
+        # Infer the CB atom position described in http://goo.gl/OaNjxe
         #
         # NOTE:
         # These are Bio.PDB.Vector objects and _not_ numpy arrays.
@@ -257,6 +254,17 @@ def is_parallel(r1, r2):
 
 def is_hbond(res_a, res_b, hb_thresh=-0.5):
     """
+
+    Args:
+        res_a: A Bio.PDB.Residue object.
+        res_b: A Bio.PDB.Residue object.
+        hb_thresh: The energetic threshold, below which a
+            hydrogen bond is assigned (optional).
+
+    Returns:
+        True if there is a hydrogen bond between ``res_a`` and ``res_b``, False
+        otherwise.
+                
     """
 
     def is_recip(_res_a, _res_b):
