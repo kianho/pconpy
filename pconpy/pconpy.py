@@ -50,12 +50,6 @@ Distance measures:
     "sccmass" -- The distance between the sidechain centers of mass
     "minvdw" -- The minimum distance between the VDW radii of each residue.
 
-Dependencies:
-    docopt
-    biopython
-    numpy
-    matplotlib
-
 """
 
 import matplotlib as mpl
@@ -111,15 +105,15 @@ def get_backbone_atoms(res):
 
 
 def get_sidechain_atoms(res, infer_CB=False):
-    """
+    """Get the sidechain atoms of a residue.
 
-    Arguments:
-        res --
-        infer_CB -- infer a virtual CB atom if the residue does not contain
-        sidechain atoms e.g. glycine residues (default: True).
+    Args:
+        res: A Bio.PDB.Residue object.
+        infer_CB: Set to True to infer the CB atom if it didn't already exist
+            (optional).
 
     Returns:
-        ...
+        A list of Bio.PDB.Residue objects.
 
     """
     atoms = filter(lambda atom : is_sidechain(atom), res.get_iterator())
@@ -141,7 +135,7 @@ def get_sidechain_atoms(res, infer_CB=False):
 def get_residues(pdb_fn, chain_ids=None, model_num=0):
     """Build a simple list of residues from a single chain of a PDB file.
 
-    Arguments:
+    Args:
         pdb_fn: The path to a PDB file.
         chain_ids: A list of single-character chain identifiers.
         model_num: The model number in the PDB file to use (optional).
@@ -229,7 +223,15 @@ def get_atom_coord(res, atom_name, verbose=False):
 
 
 def get_hbond_info(res):
-    """
+    """Process the DSSP hydrogen bond information of a single residue to obtain
+    the energies and absolute indices of potential hydrogen bond partners.
+
+    Args:
+        res: A Bio.PDB.Residue object.
+
+    Returns:
+        A ``dict`` containing the indices and energies of the hydrogen bond
+        relationships relative to the given residue.
 
     """
 
@@ -247,13 +249,16 @@ def get_hbond_info(res):
 
 
 def is_parallel(r1, r2):
+    """Determine if the N-to-C directions of two residues are parallel to each other.
+
+    """
     v1 = get_atom_coord(r1, "C") - get_atom_coord(r1, "N")
     v2 = get_atom_coord(r2, "C") - get_atom_coord(r2, "N")
     return v1.dot(v2) > 0
 
 
 def is_hbond(res_a, res_b, hb_thresh=-0.5):
-    """
+    """Determine if two residues share a hydrogen bond relationship.
 
     Args:
         res_a: A Bio.PDB.Residue object.
@@ -301,13 +306,13 @@ def px2pt(p):
 def init_spines(hidden=[]):
     """Initialise the plot frame, hiding the selected spines.
 
-    Arguments:
-        hidden -- list of spines to hide (default=[]). For example, set hidden
-        to ["top", "right"] to hide both the top and right axes borders from
-        the plot. All spines will be hidden if hidden is an empty list.
+    Args:
+        hidden: A list of spine names to hide. For example, set hidden
+            to ["top", "right"] to hide both the top and right axes borders from
+            the plot. All spines will be hidden if hidden is an empty list (optional).
 
     Returns:
-        None
+        ``None``.
 
     """
 
@@ -330,6 +335,9 @@ def init_spines(hidden=[]):
 
 def init_pylab(font_kwargs={}):
     """Initialise and clean up the look and feel of the plotting area.
+
+    Returns:
+        ``None``.
 
     """
 
@@ -354,11 +362,11 @@ def init_pylab(font_kwargs={}):
 def calc_center_of_mass(atoms):
     """Compute the center of mass from a collection of atoms.
 
-    Arguments:
-        atoms -- a list of Bio.PDB.Atom.Atom objects.
+    Args:
+        atoms: A list of Bio.PDB.Atom.Atom objects.
 
     Returns:
-        the center of mass.
+        The center of mass of ``atoms``.
 
     """
 
@@ -369,7 +377,15 @@ def calc_center_of_mass(atoms):
 
 
 def calc_minvdw_distance(res_a, res_b):
-    """
+    """Compute the minimum VDW distance between two residues, accounting for the
+    VDW radii of each atom.
+
+    Args:
+        res_a: A ``Bio.PDB.Residue`` object.
+        res_b: A ``Bio.PDB.Residue`` object.
+
+    Returns:
+        The minimum VDW distance between ``res_a`` and ``res_b``.
 
     """
 
@@ -394,13 +410,14 @@ def calc_minvdw_distance(res_a, res_b):
 def calc_cmass_distance(res_a, res_b, sidechain_only=False):
     """Compute the distance between the centres of mass of both residues.
 
-    Arguments:
-        res_a --
-        res_b --
-        sidechain_only --
+    Args:
+        res_a: A ``Bio.PDB.Residue`` object.
+        res_b: A ``Bio.PDB.Residue`` object.
+        sidechain_only: Set to True to consider only the sidechain atoms, False
+            otherwise (optional).
 
     Returns:
-        ...
+        The distance between the centers of mass of ``res_a`` and ``res_b``.
 
     """
 
@@ -421,13 +438,13 @@ def calc_distance(res_a, res_b, measure="CA"):
     """Calculate the (L2) Euclidean distance between a pair of residues
     according to a given distance metric.
 
-    Arguments:
-        res_a --
-        res_b --
-        measure -- the distance measure (default: "CA").
+    Args:
+        res_a: A ``Bio.PDB.Residue`` object.
+        res_b: A ``Bio.PDB.Residue`` object.
+        measure: The inter-residue distance measure (optional).
 
     Returns:
-        ...
+        The distance between ``res_a`` and ``res_b``.
 
     """
 
@@ -453,8 +470,12 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
         mask_thresh=None, asymmetric=False):
     """Calculate the distance matrix for a list of residues.
 
-    Arguments:
-        ...
+    Args:
+        residues: A list of ``Bio.PDB.Residue`` objects.
+        measure: The distance measure (optional).
+        dist_thresh: (optional).
+        mask_thresh: (optional).
+        asymmetric: (optional).
 
     Returns:
         The distance matrix as a masked array.
@@ -498,44 +519,12 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
     return mat
 
 
-def mat_to_ascii(mat):
-    """
-    """
-
-    if "float" in mat.dtype.name:
-        fmt = lambda x : "%.2f" % x
-    else:
-        fmt = lambda x : ( "%d" % x if x > 0 else " " )
-
-    for row in mat:
-        print "".join( fmt(val) for val in row )
-
-    return
-
-
-def do_dev():
-    pdb_id = "1ubq"
-    pdb_fn = os.path.join("../tests/pdb_files", "{}.pdb".format(pdb_id))
-    residues = get_residues(pdb_fn)
-
-    # find the shared hydrogen-bond relationships
-    pair_indices = combinations_with_replacement(xrange(len(residues)), 2)
-
-    for i, j in pair_indices:
-        res_a, res_b = residues[i], residues[j]
-        print res_a, res_b, is_hbond(res_a, res_b)
-
-    return
-
 
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
     if opts["-D"]:
         DEV_MODE = True
-
-    if DEV_MODE:
-        print opts
 
     if opts["<dist>"]:
         opts["<dist>"] = float(opts["<dist>"])
