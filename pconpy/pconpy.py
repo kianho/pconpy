@@ -63,6 +63,7 @@ import tempfile
 import numpy
 import pylab
 
+from distutils import spawn
 from collections import defaultdict
 from itertools import ifilter, product
 from itertools import combinations, combinations_with_replacement
@@ -70,6 +71,22 @@ from docopt import docopt
 
 import Bio.PDB
 import DSSP
+
+
+DSSP_MISSING_MSG = """
+WARNING:
+The `dssp` executable was not found.
+Please install DSSP into your system PATH as `dssp`.
+DSSP can be downloaded from:
+    http://swift.cmbi.ru.nl/gv/dssp/
+
+"""
+
+# Check if DSSP is installed
+if not spawn.find_executable("dssp"):
+    sys.stderr.write(DSSP_MISSING_MSG)
+    sys.exit(1)
+
 
 DEV_MODE = False
 PWD = os.path.dirname(os.path.abspath(__file__))
@@ -138,7 +155,8 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     Args:
         pdb_fn: The path to a PDB file.
         chain_ids: A list of single-character chain identifiers.
-        model_num: The model number in the PDB file to use (optional).
+        dssp: Path to the dssp executable (optional).
+        model_num: The model number in the PDB file to use (optional)
 
     Returns:
         A list of Bio.PDB.Residue objects.
@@ -150,7 +168,6 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     parser = Bio.PDB.PDBParser(pdb_id, pdb_fn)
     struct = parser.get_structure(pdb_id, pdb_fn)
     model = struct[model_num]
-
     dssp = DSSP.DSSP(model, pdb_fn)
 
     if chain_ids is None:
@@ -545,7 +562,7 @@ if __name__ == '__main__':
     else:
         measure = opts["--measure"]
 
-    residues = get_residues(opts["--pdb"])
+    residues = get_residues(opts["--pdb"], chain_ids=chain_ids)
 
     #
     # Generate the underlying 2D matrix for the selected plot.
