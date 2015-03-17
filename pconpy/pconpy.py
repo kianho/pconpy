@@ -210,7 +210,13 @@ def get_atom_coord(res, atom_name, verbose=False):
         coord = res[atom_name].get_coord()
     except KeyError:
         if atom_name != "CB":
-            raise NotImplementedError
+            # Return the first/only available atom.
+            atom = res.child_dict.values()[0]
+            sys.stderr.write(
+                "WARNING: {} atom not found in {}".format(atom_name, res)
+                    + os.linesep
+            )
+            return atom.get_coord()
 
         if verbose:
             sys.stderr.write(
