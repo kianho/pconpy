@@ -33,14 +33,16 @@ sudo apt-get install python-numpy python-biopython python-matplotlib python-doco
 ```  
 or via the [Anaconda Python Distribution](http://continuum.io/downloads):
 ```
-conda install numpy biopython matplotlib docopt
+conda install numpy biopython matplotlib pip
+pip install docopt
 ```
 
 ### DSSP
 
 PConPy uses the DSSP secondary structure assignment program to obtain
 inter-residue hydrogen bond information. The DSSP executable needs to be
-installed into your system path as `dssp`, it can be downloaded from:
+installed into your system path and renamed to `dssp`, it can be
+downloaded from:
 
 - ftp://ftp.cmbi.ru.nl/pub/software/dssp/
 
