@@ -12,7 +12,7 @@ Usage:
 
 Options:
     -p, --pdb <pdb>             The PDB file.
-    -c <chain-ids>              Comma-separated list of chain identifiers
+    -c, --chains <chain-ids>    Comma-separated list of chain identifiers
                                 (defaults to the first chain).
     -o, --output <file>         Save the plot to a file. The file format is
                                 determined by the file extension.
