@@ -36,7 +36,12 @@ or via the [Anaconda Python Distribution](http://continuum.io/downloads):
 conda install numpy biopython matplotlib docopt
 ```
 
-The DSSP secondary structure assignment program needs to be installed into your system path, it can be downloaded from:
+### DSSP
+
+PConPy uses the DSSP secondary structure assignment program to obtain
+inter-residue hydrogen bond information. The DSSP executable needs to be
+installed into your system path as `dssp`, it can be downloaded from:
+
 - ftp://ftp.cmbi.ru.nl/pub/software/dssp/
 
 
