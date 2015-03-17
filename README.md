@@ -50,17 +50,17 @@ downloaded from:
 ## Example usage
 Generate a PDF contact map using the CA-CA distance measure:
 ```
-python ./pconpy/pconpy.py cmap 8.0 --pdb 1ubq.pdb
+python ./pconpy/pconpy.py cmap 8.0 --pdb ./tests/pdb_files/1ubq.pdb \
           --chains A --output 1ubqA_cmap.pdf --measure CA 
 ```
 Generate a PNG distance map using the min. VDW distance measure:
 ```
-python ./pconpy/pconpy.py dmap --pdb ./tests/pdb_files/3erd.pdb
+python ./pconpy/pconpy.py dmap --pdb ./tests/pdb_files/3erd.pdb \
           --chains B,C --output 3erdBC_dmap.png --measure minvdw
 ```
 Generate a plain-text [hydrogen bond matrix](http://en.wikipedia.org/wiki/Protein_contact_map#HB_Plot):
 ```
-python ./pconpy/pconpy.py hbmap --pdb 1ubq.pdb
+python ./pconpy/pconpy.py hbmap --pdb ./tests/pdb_files/1ubq.pdb \
           --chains A --plaintext --output 1ubq.txt
 ```
 
