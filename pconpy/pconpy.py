@@ -555,8 +555,8 @@ if __name__ == '__main__':
     if opts["--mask-thresh"]:
         opts["--mask-thresh"] = float(opts["--mask-thresh"])
 
-    if opts["-c"]:
-        chain_ids = opts["-c"].upper().split(",")
+    if opts["--chains"]:
+        chain_ids = opts["--chains"].upper().split(",")
 
         # Check that pdb chain ids are alphanumeric (see:
         # http://deposit.rcsb.org/adit/).
