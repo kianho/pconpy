@@ -65,7 +65,7 @@ import pylab
 
 from distutils import spawn
 from collections import defaultdict
-from itertools import ifilter, product
+from itertools import product
 from itertools import combinations, combinations_with_replacement
 from docopt import docopt
 
@@ -183,7 +183,7 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     # - non-amino acids
     # - non-standard amino acids
     for ch in chains:
-        for res in ifilter(lambda r : Bio.PDB.is_aa(r), ch.get_residues()):
+        for res in filter(lambda r : Bio.PDB.is_aa(r), ch.get_residues()):
             if not Bio.PDB.is_aa(res, standard=True):
                 sys.stderr.write("WARNING: non-standard AA at %r%s"
                         % (res.get_id(), os.linesep))
@@ -517,7 +517,7 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
     # TODO:
     # - parallelise this over multiple processes + show benchmark results.
     # - use the lower-triangle to convey other information.
-    pair_indices = combinations_with_replacement(xrange(len(residues)), 2)
+    pair_indices = combinations_with_replacement(range(len(residues)), 2)
 
     for i, j in pair_indices:
         res_a = residues[i]
