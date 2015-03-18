@@ -12,7 +12,7 @@ Usage:
 
 Options:
     -p, --pdb <pdb>             The PDB file.
-    -c <chain-ids>              Comma-separated list of chain identifiers
+    -c, --chains <chain-ids>    Comma-separated list of chain identifiers
                                 (defaults to the first chain).
     -o, --output <file>         Save the plot to a file. The file format is
                                 determined by the file extension.
@@ -62,13 +62,29 @@ import tempfile
 import numpy
 import pylab
 
+from distutils import spawn
 from collections import defaultdict
-from itertools import ifilter, product
+from itertools import product
 from itertools import combinations, combinations_with_replacement
 from docopt import docopt
 
 import Bio.PDB
 import DSSP
+
+DSSP_MISSING_MSG = """
+WARNING:
+The `dssp` executable was not found.
+Please install DSSP into your system PATH as `dssp`.
+DSSP can be downloaded from:
+    http://swift.cmbi.ru.nl/gv/dssp/
+
+"""
+
+# Check if DSSP is installed
+if not spawn.find_executable("dssp"):
+    sys.stderr.write(DSSP_MISSING_MSG)
+    sys.exit(1)
+
 
 PWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -136,7 +152,8 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     Args:
         pdb_fn: The path to a PDB file.
         chain_ids: A list of single-character chain identifiers.
-        model_num: The model number in the PDB file to use (optional).
+        dssp: Path to the dssp executable (optional).
+        model_num: The model number in the PDB file to use (optional)
 
     Returns:
         A list of Bio.PDB.Residue objects.
@@ -148,7 +165,6 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     parser = Bio.PDB.PDBParser(pdb_id, pdb_fn)
     struct = parser.get_structure(pdb_id, pdb_fn)
     model = struct[model_num]
-
     dssp = DSSP.DSSP(model, pdb_fn)
 
     if chain_ids is None:
@@ -164,7 +180,7 @@ def get_residues(pdb_fn, chain_ids=None, model_num=0):
     # - non-amino acids
     # - non-standard amino acids
     for ch in chains:
-        for res in ifilter(lambda r : Bio.PDB.is_aa(r), ch.get_residues()):
+        for res in filter(lambda r : Bio.PDB.is_aa(r), ch.get_residues()):
             if not Bio.PDB.is_aa(res, standard=True):
                 sys.stderr.write("WARNING: non-standard AA at %r%s"
                         % (res.get_id(), os.linesep))
@@ -191,7 +207,13 @@ def get_atom_coord(res, atom_name, verbose=False):
         coord = res[atom_name].get_coord()
     except KeyError:
         if atom_name != "CB":
-            raise NotImplementedError
+            # Return the first/only available atom.
+            atom = res.child_dict.values()[0]
+            sys.stderr.write(
+                "WARNING: {} atom not found in {}".format(atom_name, res)
+                    + os.linesep
+            )
+            return atom.get_coord()
 
         if verbose:
             sys.stderr.write(
@@ -492,7 +514,7 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
     # TODO:
     # - parallelise this over multiple processes + show benchmark results.
     # - use the lower-triangle to convey other information.
-    pair_indices = combinations_with_replacement(xrange(len(residues)), 2)
+    pair_indices = combinations_with_replacement(range(len(residues)), 2)
 
     for i, j in pair_indices:
         res_a = residues[i]
@@ -528,8 +550,8 @@ if __name__ == '__main__':
     if opts["--mask-thresh"]:
         opts["--mask-thresh"] = float(opts["--mask-thresh"])
 
-    if opts["-c"]:
-        chain_ids = opts["-c"].upper().split(",")
+    if opts["--chains"]:
+        chain_ids = opts["--chains"].upper().split(",")
 
         # Check that pdb chain ids are alphanumeric (see:
         # http://deposit.rcsb.org/adit/).
@@ -541,7 +563,7 @@ if __name__ == '__main__':
     else:
         measure = opts["--measure"]
 
-    residues = get_residues(opts["--pdb"])
+    residues = get_residues(opts["--pdb"], chain_ids=chain_ids)
 
     #
     # Generate the underlying 2D matrix for the selected plot.

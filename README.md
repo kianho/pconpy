@@ -18,46 +18,50 @@ accessible from the [`legacy`](https://github.com/kianho/pconpy/tree/legacy)
 branch of this repository.
 
 ## Installation
-In the root directory:
-
-```
-python setup.py install
-```
 
 ### Dependencies
-PConPy was developed using Python 2.7 using the following libraries:
-- _NumPy_, _BioPython_, _Matplotlib_, and _docopt_.
 
-they can be installed  via ``pip``:
-```
-pip install numpy biopython matplotlib docopt
-```
-or via ``apt-get`` using Ubuntu:
+PConPy was developed using Python 2.7 using the following libraries:
+- NumPy
+- BioPython
+- Matplotlib
+- docopt
+
+which can be installed via ``apt-get`` using Ubuntu:
 ```
 sudo apt-get install python-numpy python-biopython python-matplotlib python-docopt
 ```  
 or via the [Anaconda Python Distribution](http://continuum.io/downloads):
 ```
-conda install numpy biopython matplotlib docopt
+conda install numpy biopython matplotlib pip
+pip install docopt
 ```
+
+### DSSP
+
+PConPy uses the DSSP secondary structure assignment program to obtain
+inter-residue hydrogen bond information. The DSSP executable needs to be
+installed into your system path and renamed to `dssp`, it can be
+downloaded from:
+
+- ftp://ftp.cmbi.ru.nl/pub/software/dssp/
 
 
 ## Example usage
 Generate a PDF contact map using the CA-CA distance measure:
 ```
-python ./pconpy/pconpy.py cmap 8.0 --pdb 1ubq.pdb
-          -c A --output 1ubqA_cmap.pdf --measure CA 
+python ./pconpy/pconpy.py cmap 8.0 --pdb ./tests/pdb_files/1ubq.pdb \
+          --chains A --output 1ubqA_cmap.pdf --measure CA 
 ```
 Generate a PNG distance map using the min. VDW distance measure:
 ```
-python ./pconpy/pconpy.py dmap --pdb 1mtp.pdb
-          -c A --output 1mtpAB_dmap.png --measure minvdw
+python ./pconpy/pconpy.py dmap --pdb ./tests/pdb_files/3erd.pdb \
+          --chains B,C --output 3erdBC_dmap.png --measure minvdw
 ```
-
 Generate a plain-text [hydrogen bond matrix](http://en.wikipedia.org/wiki/Protein_contact_map#HB_Plot):
 ```
-python ./pconpy/pconpy.py hbmap --pdb 1ubq.pdb
-          -c A --plaintext --output 1ubq.txt
+python ./pconpy/pconpy.py hbmap --pdb ./tests/pdb_files/1ubq.pdb \
+          --chains A --plaintext --output 1ubq.txt
 ```
 
 ## About
