@@ -40,7 +40,6 @@ Options:
     --transparent               Set the background to transparent.
     --show-frame
 
-    -D                          Development mode only.
     -v, --verbose               Verbose mode.
 
 Distance measures:
@@ -73,7 +72,6 @@ from docopt import docopt
 import Bio.PDB
 import DSSP
 
-
 DSSP_MISSING_MSG = """
 WARNING:
 The `dssp` executable was not found.
@@ -89,7 +87,6 @@ if not spawn.find_executable("dssp"):
     sys.exit(1)
 
 
-DEV_MODE = False
 PWD = os.path.dirname(os.path.abspath(__file__))
 
 # The atom names of the backbone and sidechain atoms are based on those defined
@@ -562,9 +559,7 @@ def calc_contact_graph(residues):
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
-    if opts["-D"]:
-        DEV_MODE = True
-
+    # Distance threshold for contact maps.
     if opts["<dist>"]:
         opts["<dist>"] = float(opts["<dist>"])
 
@@ -595,8 +590,6 @@ if __name__ == '__main__':
 
     if opts["--plaintext"]:
         if opts["cmap"] or opts["hbmap"]:
-            # Use mask distances below the selected threshold.
-            #mat = mat < float(opts["-t"])
             fmt = "%d"
         else:
             fmt = "%.3f"
@@ -612,7 +605,6 @@ if __name__ == '__main__':
         # hide all the spines i.e. no axes are drawn
         init_spines(hidden=["top", "bottom", "left", "right"])
 
-        # make figure square-shaped
         pylab.gcf().set_figwidth(float(opts["--width-inches"]))
         pylab.gcf().set_figheight(float(opts["--height-inches"]))
 
@@ -627,15 +619,15 @@ if __name__ == '__main__':
         if opts["--show-frame"]:
             init_spines(hidden=[])
 
-        if opts["--greyscale"] or opts["cmap"] or opts["hbmap"]:
-            cmap = mpl.cm.Greys
-        else:
-            cmap = mpl.cm.jet_r
-
         if opts["cmap"] or opts["hbmap"]:
             map_obj = pylab.pcolormesh(mat,
-                    shading="flat", edgecolors="None", cmap=cmap)
+                    shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
         elif opts["dmap"]:
+            if opts["--greyscale"]:
+                cmap = mpl.cm.Greys
+            else:
+                cmap = mpl.cm.jet_r
+
             map_obj = pylab.pcolormesh(mat, shading="flat",
                     edgecolors="None", cmap=cmap)
 
@@ -647,9 +639,6 @@ if __name__ == '__main__':
                 cbar = pylab.colorbar(map_obj, drawedges=False, cax=cax)
                 cbar.outline.set_visible(False)
                 pylab.ylabel("Distance (angstroms)")
-        elif opts["hbmap"]:
-            map_obj = pylab.pcolormesh(mat,
-                    shading="flat", edgecolors="None", cmap=cmap)
         else:
             raise NotImplementedError
 
