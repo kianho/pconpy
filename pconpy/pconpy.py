@@ -521,9 +521,7 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
 if __name__ == '__main__':
     opts = docopt(__doc__)
 
-    if opts["-D"]:
-        DEV_MODE = True
-
+    # Distance threshold for contact maps.
     if opts["<dist>"]:
         opts["<dist>"] = float(opts["<dist>"])
 
@@ -554,8 +552,6 @@ if __name__ == '__main__':
 
     if opts["--plaintext"]:
         if opts["cmap"] or opts["hbmap"]:
-            # Use mask distances below the selected threshold.
-            #mat = mat < float(opts["-t"])
             fmt = "%d"
         else:
             fmt = "%.3f"
@@ -571,7 +567,6 @@ if __name__ == '__main__':
         # hide all the spines i.e. no axes are drawn
         init_spines(hidden=["top", "bottom", "left", "right"])
 
-        # make figure square-shaped
         pylab.gcf().set_figwidth(float(opts["--width-inches"]))
         pylab.gcf().set_figheight(float(opts["--height-inches"]))
 
