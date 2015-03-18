@@ -581,15 +581,15 @@ if __name__ == '__main__':
         if opts["--show-frame"]:
             init_spines(hidden=[])
 
-        if opts["--greyscale"] or opts["cmap"] or opts["hbmap"]:
-            cmap = mpl.cm.Greys
-        else:
-            cmap = mpl.cm.jet_r
-
         if opts["cmap"] or opts["hbmap"]:
             map_obj = pylab.pcolormesh(mat,
-                    shading="flat", edgecolors="None", cmap=cmap)
+                    shading="flat", edgecolors="None", cmap=mpl.cm.Greys)
         elif opts["dmap"]:
+            if opts["--greyscale"]:
+                cmap = mpl.cm.Greys
+            else:
+                cmap = mpl.cm.jet_r
+
             map_obj = pylab.pcolormesh(mat, shading="flat",
                     edgecolors="None", cmap=cmap)
 
