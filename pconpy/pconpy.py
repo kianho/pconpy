@@ -40,7 +40,6 @@ Options:
     --transparent               Set the background to transparent.
     --show-frame
 
-    -D                          Development mode only.
     -v, --verbose               Verbose mode.
 
 Distance measures:
@@ -71,7 +70,6 @@ from docopt import docopt
 import Bio.PDB
 import DSSP
 
-DEV_MODE = False
 PWD = os.path.dirname(os.path.abspath(__file__))
 
 # The atom names of the backbone and sidechain atoms are based on those defined
