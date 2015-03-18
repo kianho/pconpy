@@ -62,6 +62,7 @@ import re
 import tempfile
 import numpy
 import pylab
+import networkx as nx
 
 from distutils import spawn
 from collections import defaultdict
@@ -540,6 +541,21 @@ def calc_dist_matrix(residues, measure="CA", dist_thresh=None,
         mat = numpy.ma.masked_greater_equal(mat, mask_thresh)
 
     return mat
+
+
+def calc_contact_graph(residues):
+    """
+    """
+
+    G = nx.Graph
+
+    pair_indices = combinations_with_replacement(range(len(residues)), 2)
+
+    for i, j in pair_indices:
+        res_a, res_b = residues[i], residues[j]
+        dist = calc_distance(res_a, res_b, measure)
+
+    return
 
 
 
