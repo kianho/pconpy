@@ -6,16 +6,16 @@ PConPy
 ![1ubq CA-CA distance map](images/1ubq-dmap-CA.png)
 ![1ubq CA-CA contact map](images/1ubq-cmap-CA.png)
 
-This is the official repository for the redevelopment of PConPy, please cite our paper
-if you use PConPy in your research:
+This is the official repository for the redevelopment of PConPy. The original
+(now obsolete) source code associated with the article is accessible from the [`legacy`](https://github.com/kianho/pconpy/tree/legacy) branch of this repository.
+
+## Publication
+
+Please consider citing our paper if you found PConPy to be useful in your research:
 
 - H. Ho, M. Kuiper and R. Kotagiri, "PConPy—a Python module for generating 2D
-  protein maps", Bioinformatics, vol. 24, no. 24, pp. 2934-2935, 2008.
+  protein maps", _Bioinformatics_, vol. 24, no. 24, pp. 2934-2935, 2008.
   [[article](http://10.1093/bioinformatics/btn566)]
-
-The original (now deprecated) source code associated with the article is
-accessible from the [`legacy`](https://github.com/kianho/pconpy/tree/legacy)
-branch of this repository.
 
 ## Installation
 
