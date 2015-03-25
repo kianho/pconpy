@@ -9,6 +9,18 @@ PConPy
 This is the official repository for the redevelopment of PConPy. The original
 (now obsolete) source code associated with the article is accessible from the [`legacy`](https://github.com/kianho/pconpy/tree/legacy) branch of this repository.
 
+## About
+
+A [_contact map_](http://en.wikipedia.org/wiki/Protein_contact_map) is a 2D
+representation of protein structure that illustrates the presence or absence of
+contacts between individual amino acids. This enables the rapid visual
+exploratory data analysis of structural features without 3D rendering software.
+Additionally, the underlying 2D matrix of a contact map, known as a _contact
+matrix_, can naturally be used as numeric input in subsequent automated
+knowledge discovery or machine learning tasks. PConPy generates
+publication-quality renderings of contact maps, and the related distance- and
+hydrogen bond maps.
+
 ## Publication
 
 Please consider citing our paper if you found PConPy to be useful in your research:
@@ -63,19 +75,6 @@ Generate a plain-text [hydrogen bond matrix](http://en.wikipedia.org/wiki/Protei
 python ./pconpy/pconpy.py hbmap --pdb ./tests/pdb_files/1ubq.pdb \
           --chains A --plaintext --output 1ubq.txt
 ```
-
-## About
-
-A [_contact map_](http://en.wikipedia.org/wiki/Protein_contact_map) is a 2D
-representation of protein structure that illustrates the presence or absence of
-contacts between individual amino acids. This enables the rapid visual
-exploratory data analysis of structural features without 3D rendering software.
-Additionally, the underlying 2D matrix of a contact map, known as a _contact
-matrix_, can naturally be used as numeric input in subsequent automated
-knowledge discovery or machine learning tasks. PConPy generates
-publication-quality renderings of contact maps, and the related distance- and
-hydrogen bond maps.
-
 
 ## Who's using PConPy?
 
