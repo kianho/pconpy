@@ -25,7 +25,7 @@ hydrogen bond maps.
 
 Please consider citing our paper if you found PConPy to be useful in your research:
 
-- H. K. Ho, M. Kuiper and R. Kotagiri, "PConPy—a Python module for generating 2D
+- H. K. Ho, M. Kuiper and K. Ramamohanarao, "PConPy—a Python module for generating 2D
   protein maps", _Bioinformatics_, vol. 24, no. 24, pp. 2934-2935, 2008.
   [[article](http://10.1093/bioinformatics/btn566)]
 
