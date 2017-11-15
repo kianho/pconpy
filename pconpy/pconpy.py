@@ -235,9 +235,9 @@ def get_atom_coord(res, atom_name, verbose=False):
         CA_N = N - CA
         CA_C = C - CA
 
-        rot_mat = Bio.PDB.rotaxis(numpy.pi * 120.0 / 180.0, CA_C)
+        rot_mat = Bio.PDB.rotaxis(-numpy.pi * 120.0 / 180.0, CA_C)
 
-        coord = (CA + N.left_multiply(rot_mat)).get_array()
+        coord = (CA + CA_N.left_multiply(rot_mat)).get_array()
 
     return coord
 
